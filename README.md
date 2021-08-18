@@ -68,5 +68,5 @@ ALl setup. Let prometheus starts to scrape.
 
 ```shell
 docker build -t godwoken-metrics-agent .
-docker run -dp 3000:3000 --add-host=godwoken.web3:192.168.2.180 godwoken-metrics-agent
+docker run -dp 3000:3000 --add-host=godwoken.web3:192.168.2.180 --env GW_NODE_NAME=godwoken godwoken-metrics-agent
 ```
