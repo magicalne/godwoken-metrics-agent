@@ -12,19 +12,14 @@ pipenv install
 
 ## Run
 
-### Env
-
-```shell
-export MONITOR_NODE_IP=127.0.0.1 ## Optional
-export GW_NODE_NAME=GW_NODE_ALPHA
-```
 ### Spawn a service
 
 ```shell
-pipenv run python -m agent 3004
+pipenv run python -m agent http://localhost:8024 3000
 ```
 
-`3004` is the port we are running on.
+- `3000` is the port we are running on.
+- `http://localhost:8024` is the godwoken web3 url.
 
 ### Checkout some metrics
 
@@ -68,5 +63,5 @@ ALl setup. Let prometheus starts to scrape.
 
 ```shell
 docker build -t godwoken-metrics-agent .
-docker run -dp 3000:3000 --add-host=godwoken.web3:192.168.2.180 --env GW_NODE_NAME=godwoken godwoken-metrics-agent
+docker run -p 3000:3000 -e WEB3_URL=http://192.168.21.180:8024 magicalne/godwoken-metrics-agent
 ```
