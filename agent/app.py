@@ -6,6 +6,7 @@ from prometheus_client.core import CollectorRegistry, Gauge, Info
 from flask import Response, Flask
 import sys
 
+
 NodeFlask = Flask(__name__)
 web3_url = sys.argv[1]
 
@@ -72,13 +73,42 @@ class RpcGet(object):
             replay = r.json()["result"]
             return {
                 "blocknumber": convert_int(replay["block"]["raw"]["number"]),
+                "parent_block_hash": replay['block']['raw']['parent_block_hash'],
                 "commit_transactions": len(replay["block"]["transactions"]),
+                "transactions": replay["block"]["transactions"],
+                "blocknumber_timestamp": convert_int(replay["block"]["raw"]["timestamp"])
+            }
+        except:
+            return {
+                "blocknumber": "-1",
+                "parent_block_hash": "-1",
+                "commit_transactions": "-1",
+                "transactions": [],
+                "blocknumber_timestamp": "-1"
+            }
+
+    def get_BlockDetailByNumber(self, number):
+        headers = {"Content-Type":  "application/json"}
+        data = '{"id":2, "jsonrpc":"2.0", "method":"gw_get_block_by_number", "params":["%s"]}' % (
+            number)
+        try:
+            r = requests.post(
+                url="%s" % (self.web3_url),
+                data=data,
+                headers=headers
+            )
+            replay = r.json()["result"]
+            return {
+                "blocknumber": convert_int(replay["block"]["raw"]["number"]),
+                "commit_transactions": len(replay["block"]["transactions"]),
+                "transactions": replay["block"]["transactions"],
                 "blocknumber_timestamp": convert_int(replay["block"]["raw"]["timestamp"])
             }
         except:
             return {
                 "blocknumber": "-1",
                 "commit_transactions": "-1",
+                "transactions": [],
                 "blocknumber_timestamp": "-1"
             }
 
@@ -140,6 +170,9 @@ class RpcGet(object):
 # flask object
 
 
+get_result = RpcGet(web3_url)
+
+
 @NodeFlask.route("/metrics/godwoken")
 def exporter():
     registry = CollectorRegistry(auto_describe=False)
@@ -163,7 +196,7 @@ def exporter():
 
     node_BlockDetail_transactions = Gauge("Node_Get_BlockDetail_transactions",
                                           "Get LastTxInfo, label include last_block_hash, tx_hash. value is proposal_transactions in block;",
-                                          ["web3_url", "transactions"],
+                                          ["web3_url"],
                                           registry=registry)
 
     node_BlockTimeDifference = Gauge("Node_Get_BlockTimeDifference",
@@ -171,7 +204,6 @@ def exporter():
                                      ["web3_url"],
                                      registry=registry)
 
-    get_result = RpcGet(web3_url)
     LastBlockHeight = get_result.get_LastBlockHeight()
     if "-1" in LastBlockHeight.values():
         print(LastBlockHeight)
@@ -219,8 +251,7 @@ def exporter():
         ).set(TimeDifference)
 
         node_BlockDetail_transactions.labels(
-            web3_url=web3_url,
-            transactions=LastBlockDetail["commit_transactions"]
+            web3_url=web3_url
         ).set(LastBlockDetail["commit_transactions"])
 
         node_BlockTimeDifference.labels(

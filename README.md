@@ -26,7 +26,7 @@ pipenv run python -m agent http://localhost:8024 3000
 Suppose we have a web3 on `localhost:8024`. Then we can fire a request like below:
 
 ```shell
-curl http://localhost:3004/metrics/8024
+curl http://localhost:3000/metrics/godwoken
 ```
 
 You should see something like below:
@@ -62,6 +62,6 @@ ALl setup. Let prometheus starts to scrape.
 ## Docker
 
 ```shell
-docker build -t godwoken-metrics-agent .
-docker run -p 3000:3000 -e WEB3_URL=http://192.168.21.180:8024 magicalne/godwoken-metrics-agent
+docker build -t magicalne/godwoken-metrics-agent .
+docker run -p 3000:3000 -e WEB3_URL=http://192.168.1.180:8024 magicalne/godwoken-metrics-agent
 ```

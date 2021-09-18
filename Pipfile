@@ -8,6 +8,7 @@ requests = "*"
 prometheus-client = "*"
 Flask = "*"
 waitress = "*"
+pandas = "*"
 
 [dev-packages]
 
