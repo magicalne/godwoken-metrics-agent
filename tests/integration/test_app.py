@@ -2,11 +2,13 @@ import unittest
 import pandas as pd
 import json
 from datetime import datetime, timedelta
-from agent.app import RpcGet
+from agent.app import RpcGet, get_custodian_ckb
+from agent.ckb_indexer import CKBIndexer
+from agent.gw_config import mainnet_config, testnet_config
 from agent.tx import TxStats
 
 
-class RPCTest(unittest.TestCase):
+class TestApp(unittest.TestCase):
 
     def setUp(self) -> None:
         self.rpc = RpcGet("https://godwoken-testnet-web3-rpc.ckbapp.dev")
@@ -38,9 +40,15 @@ class RPCTest(unittest.TestCase):
         df = pd.DataFrame(txs)
         print(df.describe())
 
-    def test1(self):
+    def test_sync(self):
         tx_stats = TxStats(self.rpc, 10*60, 10)
         tx_stats.sync_block()
         from_stats, to_stats = tx_stats.stats()
         print(from_stats.head())
         print(to_stats.head())
+
+    def test_get_custodian_ckb(self):
+        config = mainnet_config()
+        ckb_indexer = CKBIndexer("https://mainnet.ckbapp.dev/indexer")
+        capacity = get_custodian_ckb(ckb_indexer, config)
+        print(capacity)
