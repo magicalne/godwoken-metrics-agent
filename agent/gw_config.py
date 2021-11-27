@@ -1,3 +1,4 @@
+import json
 import requests
 
 
@@ -35,3 +36,14 @@ def mainnet_config():
 def testnet_config():
 	url = "https://raw.githubusercontent.com/nervosnetwork/godwoken-public/master/testnet/config/%s"
 	return get_config(prefix_url=url, scirpts_result_name="scripts-deploy-result.json", rollup_result_name="genesis.json")
+
+def devnet_config(rollup_result_path, scripts_result_path):
+	if rollup_result_path is not None and scripts_result_path is not None:
+		with open(rollup_result_path) as f:
+			rollup_result = json.load(f)
+
+		with open(scripts_result_path) as f:
+			scripts_result = json.load(f)
+		return GwConfig(rollup_result, scripts_result)
+	else:
+		return -1

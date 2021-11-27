@@ -15,6 +15,8 @@ pipenv install
 ### Spawn a service
 
 ```shell
+# optional
+source .env
 pipenv run python -m agent http://localhost:8024 3000
 ```
 
@@ -63,5 +65,14 @@ ALl setup. Let prometheus starts to scrape.
 
 ```shell
 docker build -t magicalne/godwoken-metrics-agent .
-docker run -p 3000:3000 -e WEB3_URL=http://192.168.1.180:8024 magicalne/godwoken-metrics-agent
+
+# on testnet
+docker run \
+	-p 3000:3000 \
+	-e WEB3_URL=$web3_url \
+	-e GW_RPC_URL=$gw_rpc_url \
+	-e CKB_RPC_URL=$ckb_rpc_url \
+	-e CKB_INDEXER_URL=$ckb_indexer_url \
+	-e NET_ENV=testnet
+	magicalne/godwoken-metrics-agent:latest
 ```

@@ -1,7 +1,7 @@
 import requests
 
 
-class GodwokenRpc(object):
+class GodwokenRpc:
 
     def __init__(self, url):
         self.url = url

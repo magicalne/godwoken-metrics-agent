@@ -4,7 +4,7 @@ import requests
 from agent.ckb_indexer import CKBIndexer
 from agent.ckb_rpc import CkbRpc
 from agent.godwoken_rpc import GodwokenRpc
-from agent.gw_config import GwConfig, testnet_config, mainnet_config
+from agent.gw_config import GwConfig, devnet_config, testnet_config, mainnet_config
 import prometheus_client
 from prometheus_client.core import CollectorRegistry, Gauge, Info
 from flask import Response, Flask
@@ -17,6 +17,7 @@ gw_rpc_url = os.environ['GW_RPC_URL']
 ckb_indexer_url = os.environ['CKB_INDEXER_URL']
 ckb_rpc_url = os.environ['CKB_RPC_URL']
 net_env = os.environ['NET_ENV']
+
 
 def convert_int(value):
     try:
@@ -193,7 +194,6 @@ def get_custodian_ckb(ckb_indexer: CKBIndexer, gw_config: GwConfig) -> int:
         cursor = result['last_cursor']
         if cursor == "0x":
             break
-        print(cursor, capacity)
     return capacity
     
 def get_gw_stat_by_lock(lock_name, gw_rpc: GodwokenRpc, block_hash, ckb_rpc: CkbRpc):
@@ -206,23 +206,42 @@ def get_gw_stat_by_lock(lock_name, gw_rpc: GodwokenRpc, block_hash, ckb_rpc: Ckb
     amount = 0
     if inputs is None or len(inputs) == 0:
         return (cnt, amount)
-    for i in inputs:
-        tx_hash = i['previous_output']['tx_hash']
-        res = ckb_rpc.get_transaction(tx_hash)
-        outputs = res['result']['transaction']['ouputs']
-        for o in outputs:
-            code_hash = o['lock']['code_hash']
-            if code_hash == lock_type_hash:
-                cnt += 1
-                amount += convert_int(o['capacity'])
-    return (cnt, amount)
+    try:
+        for i in inputs:
+            tx_hash = i['previous_output']['tx_hash']
+            res = ckb_rpc.get_transaction(tx_hash)
+            outputs = res['result']['transaction']['outputs']
+            for o in outputs:
+                code_hash = o['lock']['code_hash']
+                if code_hash == lock_type_hash:
+                    cnt += 1
+                    amount += convert_int(o['capacity'])
+        return (cnt, amount)
+    except:
+        return (cnt, amount)
 
 get_result = RpcGet(web3_url)
 gw_rpc = GodwokenRpc(gw_rpc_url)
 ckb_indexer = CKBIndexer(ckb_indexer_url)
 ckb_rpc = CkbRpc(ckb_rpc_url)
 gw_config = mainnet_config() if net_env.lower() == "mainnet" else testnet_config()
-
+if net_env is None:
+    print('net_env is None, use testnet config')
+    gw_config = testnet_config()
+else:
+    net_env = net_env.lower()
+    if net_env == "mainnet":
+        gw_config = mainnet_config()
+    elif net_env == "testnet":
+        gw_config = testnet_config()
+    else:
+        print("use devnet")
+        rollup_result_path = os.environ['ROLLUP_RESULT_PATH']
+        scripts_result_path = os.environ['SCRIPTS_RESULT_PATH']
+        gw_config = devnet_config(rollup_result_path, scripts_result_path)
+        if gw_config == -1:
+            print('the env var: [ROLLUP_RESULT_PATH] and [SCRIPTS_RESULT_PATH] are not found, use testnet')
+            gw_config = testnet_config()
 
 @NodeFlask.route("/metrics/godwoken")
 def exporter():
@@ -255,15 +274,16 @@ def exporter():
                                      ["web3_url"],
                                      registry=registry)
 
-    gw_custodian_capacity = Gauge("Node_Get_CustodianCapacity",
-                                    "Get custodian ckb capacity from ckb indexer",
-                                    ["web3_url"],
-                                    registry=registry)
+    # Too slow, fix it later.
+    # gw_custodian_capacity = Gauge("Node_Get_CustodianCapacity",
+    #                                 "Get custodian ckb capacity from ckb indexer",
+    #                                 ["web3_url"],
+    #                                 registry=registry)
 
-    gw_deposit_cnt = Gauge("Node_Get_DepositCnt", "Get deposit count from current block", ["web3-url"], registry=registry)
-    gw_deposit_capacity = Gauge("Node_Get_DepositCnt", "Get deposit capacity from current block", ["web3-url"], registry=registry)
-    gw_withdrawal_cnt = Gauge("Node_Get_WithdrawalCnt", "Get withdrawal count from current block", ["web3-url"], registry=registry)
-    gw_withdrawal_capacity = Gauge("Node_Get_WithdrawalCnt", "Get withdrawal capacityfrom current block", ["web3-url"], registry=registry)
+    gw_deposit_cnt = Gauge("Node_Get_DepositCnt", "Get deposit count from current block", ["web3_url"], registry=registry)
+    gw_deposit_capacity = Gauge("Node_Get_DepositCapacity", "Get deposit capacity from current block", ["web3_url"], registry=registry)
+    gw_withdrawal_cnt = Gauge("Node_Get_WithdrawalCnt", "Get withdrawal count from current block", ["web3_url"], registry=registry)
+    gw_withdrawal_capacity = Gauge("Node_Get_WithdrawalCapacity", "Get withdrawal capacityfrom current block", ["web3_url"], registry=registry)
 
     LastBlockHeight = get_result.get_LastBlockHeight()
     if "-1" in LastBlockHeight.values():
@@ -319,14 +339,18 @@ def exporter():
             web3_url=web3_url
         ).set(TimeDifference)
 
-    capacity = get_custodian_ckb(ckb_indexer, gw_config)
-    gw_custodian_capacity.labels(web3_url).set(capacity)
+    one_ckb = 100_000_000
+    # capacity = get_custodian_ckb(ckb_indexer, gw_config)
+    # capacity = int(capacity / one_ckb)
+    # gw_custodian_capacity.labels(web3_url).set(capacity)
 
-    cnt, amount = get_gw_stat_by_lock('deposit_lock', gw_rpc, LastBlockHash, ckb_rpc)
+    cnt, amount = get_gw_stat_by_lock('deposit_lock', gw_rpc, LastBlockHash["last_block_hash"], ckb_rpc)
     gw_deposit_cnt.labels(web3_url=web3_url).set(cnt)
-    gw_deposit_capacity.labels(web3_url=web3_url).set(capacity)
-    cnt, amount = get_gw_stat_by_lock('withdrawal_lock', gw_rpc, LastBlockHash, ckb_rpc)
+    amount = int(amount / one_ckb)
+    gw_deposit_capacity.labels(web3_url=web3_url).set(amount)
+    cnt, amount = get_gw_stat_by_lock('withdrawal_lock', gw_rpc, LastBlockHash["last_block_hash"], ckb_rpc)
+    amount = int(amount / one_ckb)
     gw_withdrawal_cnt.labels(web3_url=web3_url).set(cnt)
-    gw_withdrawal_capacity.labels(web3_url=web3_url).set(capacity)
+    gw_withdrawal_capacity.labels(web3_url=web3_url).set(amount)
 
     return Response(prometheus_client.generate_latest(registry), mimetype="text/plain")
