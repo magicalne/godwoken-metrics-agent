@@ -2,7 +2,6 @@ import unittest
 import pandas as pd
 import json
 from datetime import datetime, timedelta
-from agent.app import RpcGet, get_custodian_ckb
 from agent.ckb_indexer import CKBIndexer
 from agent.gw_config import mainnet_config, testnet_config
 from agent.tx import TxStats
@@ -47,8 +46,8 @@ class TestApp(unittest.TestCase):
         print(from_stats.head())
         print(to_stats.head())
 
-    def test_get_custodian_ckb(self):
-        config = mainnet_config()
-        ckb_indexer = CKBIndexer("https://mainnet.ckbapp.dev/indexer")
-        capacity = get_custodian_ckb(ckb_indexer, config)
-        print(capacity)
+    # def test_get_custodian_ckb(self):
+    #     config = mainnet_config()
+    #     ckb_indexer = CKBIndexer("https://mainnet.ckbapp.dev/indexer")
+    #     capacity = get_custodian_ckb(ckb_indexer, config)
+    #     print(capacity)
