@@ -1,10 +1,13 @@
 # encoding: utf-8
 
 import requests
+from time import sleep
+from agent.utils import convert_int
 from agent.ckb_indexer import CKBIndexer
 from agent.ckb_rpc import CkbRpc
 from agent.godwoken_rpc import GodwokenRpc
 from agent.gw_config import GwConfig, devnet_config, testnet_config, mainnet_config
+from agent.sched_custodian import SchedCustodian
 import prometheus_client
 from prometheus_client.core import CollectorRegistry, Gauge, Info
 from flask import Response, Flask
@@ -17,15 +20,6 @@ gw_rpc_url = os.environ['GW_RPC_URL']
 ckb_indexer_url = os.environ['CKB_INDEXER_URL']
 ckb_rpc_url = os.environ['CKB_RPC_URL']
 net_env = os.environ['NET_ENV']
-
-
-def convert_int(value):
-    try:
-        return int(value)
-    except ValueError:
-        return int(value, base=16)
-    except Exception as exp:
-        raise exp
 
 
 class RpcGet(object):
@@ -176,25 +170,6 @@ class RpcGet(object):
             }
 
 
-def get_custodian_ckb(ckb_indexer: CKBIndexer, gw_config: GwConfig) -> int:
-    custodian_script_type_hash = gw_config.get_lock_type_hash("custodian_lock")
-    rollup_type_hash = gw_config.get_rollup_type_hash()
-    capacity = 0
-    cursor = None
-    while True:
-        limit = 1000
-        res = ckb_indexer.get_cells(custodian_script_type_hash, rollup_type_hash, limit, cursor)
-        if res['result'] == -1:
-            return -1
-        result = res['result']
-        for cell in result['objects']:
-            c = convert_int(cell['output']['capacity'])
-            capacity += c
-
-        cursor = result['last_cursor']
-        if cursor == "0x":
-            break
-    return capacity
     
 def get_gw_stat_by_lock(lock_name, gw_rpc: GodwokenRpc, block_hash, ckb_rpc: CkbRpc):
     lock_type_hash = gw_config.get_lock_type_hash(lock_name)
@@ -243,6 +218,11 @@ else:
             print('the env var: [ROLLUP_RESULT_PATH] and [SCRIPTS_RESULT_PATH] are not found, use testnet')
             gw_config = testnet_config()
 
+sched_custodian = SchedCustodian(ckb_indexer_url, gw_config)
+print('wait on custodian for the first time...')
+while sched_custodian.get_custodian() is None:
+    sleep(1000)
+
 @NodeFlask.route("/metrics/godwoken")
 def exporter():
     registry = CollectorRegistry(auto_describe=False)
@@ -275,10 +255,10 @@ def exporter():
                                      registry=registry)
 
     # Too slow, fix it later.
-    # gw_custodian_capacity = Gauge("Node_Get_CustodianCapacity",
-    #                                 "Get custodian ckb capacity from ckb indexer",
-    #                                 ["web3_url"],
-    #                                 registry=registry)
+    gw_custodian_capacity = Gauge("Node_Get_CustodianCapacity",
+                                    "Get custodian ckb capacity from ckb indexer",
+                                    ["web3_url"],
+                                    registry=registry)
 
     gw_deposit_cnt = Gauge("Node_Get_DepositCnt", "Get deposit count from current block", ["web3_url"], registry=registry)
     gw_deposit_capacity = Gauge("Node_Get_DepositCapacity", "Get deposit capacity from current block", ["web3_url"], registry=registry)
@@ -340,9 +320,9 @@ def exporter():
         ).set(TimeDifference)
 
     one_ckb = 100_000_000
-    # capacity = get_custodian_ckb(ckb_indexer, gw_config)
-    # capacity = int(capacity / one_ckb)
-    # gw_custodian_capacity.labels(web3_url).set(capacity)
+    capacity = sched_custodian.get_custodian()
+    capacity = int(capacity / one_ckb)
+    gw_custodian_capacity.labels(web3_url).set(capacity)
 
     cnt, amount = get_gw_stat_by_lock('deposit_lock', gw_rpc, LastBlockHash["last_block_hash"], ckb_rpc)
     gw_deposit_cnt.labels(web3_url=web3_url).set(cnt)

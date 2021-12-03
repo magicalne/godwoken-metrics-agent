@@ -95,6 +95,6 @@ docker run \
 	-e GW_RPC_URL=$gw_rpc_url \
 	-e CKB_RPC_URL=$ckb_rpc_url \
 	-e CKB_INDEXER_URL=$ckb_indexer_url \
-	-e NET_ENV=testnet
+	-e NET_ENV=testnet \
 	magicalne/godwoken-metrics-agent:latest
 ```

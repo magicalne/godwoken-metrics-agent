@@ -1,6 +1,9 @@
 import requests
 import traceback
 
+from agent.utils import convert_int
+from agent.gw_config import GwConfig
+
 
 class CKBIndexer(object):
 
@@ -39,3 +42,22 @@ class CKBIndexer(object):
                 "result": "-1"
             }
 
+    def get_custodian_ckb(self, gw_config: GwConfig) -> int:
+        custodian_script_type_hash = gw_config.get_lock_type_hash("custodian_lock")
+        rollup_type_hash = gw_config.get_rollup_type_hash()
+        capacity = 0
+        cursor = None
+        while True:
+            limit = 1000
+            res = self.get_cells(custodian_script_type_hash, rollup_type_hash, limit, cursor)
+            if res['result'] == -1:
+                return -1
+            result = res['result']
+            for cell in result['objects']:
+                c = convert_int(cell['output']['capacity'])
+                capacity += c
+
+            cursor = result['last_cursor']
+            if cursor == "0x":
+                break
+        return capacity
