@@ -1,6 +1,6 @@
 from time import sleep
 import unittest
-from agent.sched_cuustodian import SchedCustodian
+from agent.sched_custodian import SchedCustodian
 from agent.gw_config import testnet_config
 
 class TestSchedCustodian(unittest.TestCase):

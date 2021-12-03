@@ -11,20 +11,18 @@ class SchedCustodian:
 		self.is_processing = False
 		self.task: ApplyResult = None
 		self.result = None
+		self.pool = ThreadPool(processes=1)
 
 	def get_custodian(self):
 		if self.is_processing:
 			if self.task.ready():
-				print("Ready.")
+				print("Query custodian is ready.")
 				self.is_processing = False
-				return self.task.get()
-			else:
-				return None
-
-		pool = ThreadPool(processes=1)
-		self.task = pool.apply_async(get_custodian, (self.ckb_indexer_url, self.gw_config))
-		self.is_processing = True
-		return None
+				self.result = self.task.get()
+		else:
+			self.task = self.pool.apply_async(get_custodian, (self.ckb_indexer_url, self.gw_config))
+			self.is_processing = True
+		return self.result
 
 
 def get_custodian(ckb_index_url, gw_config):

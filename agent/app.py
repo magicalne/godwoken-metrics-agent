@@ -1,11 +1,13 @@
 # encoding: utf-8
 
 import requests
+from time import sleep
 from agent.utils import convert_int
 from agent.ckb_indexer import CKBIndexer
 from agent.ckb_rpc import CkbRpc
 from agent.godwoken_rpc import GodwokenRpc
 from agent.gw_config import GwConfig, devnet_config, testnet_config, mainnet_config
+from agent.sched_custodian import SchedCustodian
 import prometheus_client
 from prometheus_client.core import CollectorRegistry, Gauge, Info
 from flask import Response, Flask
@@ -216,7 +218,10 @@ else:
             print('the env var: [ROLLUP_RESULT_PATH] and [SCRIPTS_RESULT_PATH] are not found, use testnet')
             gw_config = testnet_config()
 
-
+sched_custodian = SchedCustodian(ckb_indexer_url, gw_config)
+print('wait on custodian for the first time...')
+while sched_custodian.get_custodian() is None:
+    sleep(1000)
 
 @NodeFlask.route("/metrics/godwoken")
 def exporter():
@@ -315,9 +320,9 @@ def exporter():
         ).set(TimeDifference)
 
     one_ckb = 100_000_000
-    # capacity = get_custodian_ckb(ckb_indexer, gw_config)
-    # capacity = int(capacity / one_ckb)
-    # gw_custodian_capacity.labels(web3_url).set(capacity)
+    capacity = sched_custodian.get_custodian()
+    capacity = int(capacity / one_ckb)
+    gw_custodian_capacity.labels(web3_url).set(capacity)
 
     cnt, amount = get_gw_stat_by_lock('deposit_lock', gw_rpc, LastBlockHash["last_block_hash"], ckb_rpc)
     gw_deposit_cnt.labels(web3_url=web3_url).set(cnt)
