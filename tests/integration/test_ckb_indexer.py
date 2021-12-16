@@ -3,8 +3,8 @@ from agent.ckb_indexer import CKBIndexer
 class TestCkbIndexer(unittest.TestCase):
 
 	def setUp(self) -> None:
-		# url = "https://testnet.ckb.dev/indexer"
-		url = "http://localhost:8116"
+		url = "https://testnet.ckb.dev/indexer"
+		# url = "http://localhost:8116"
 		self.client = CKBIndexer(url)
 
 	def test_get_cell(self):

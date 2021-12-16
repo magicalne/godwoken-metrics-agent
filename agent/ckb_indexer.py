@@ -22,7 +22,7 @@ class CKBIndexer(object):
             },
             "script_type": "lock"
         },
-        "desc",
+        "asc",
         limit
         ]}
         if cursor is not None:
@@ -49,15 +49,18 @@ class CKBIndexer(object):
         cursor = None
         while True:
             limit = 1000
-            res = self.get_cells(custodian_script_type_hash, rollup_type_hash, limit, cursor)
-            if res['result'] == -1:
-                return -1
-            result = res['result']
-            for cell in result['objects']:
-                c = convert_int(cell['output']['capacity'])
-                capacity += c
+            try:
+                res = self.get_cells(custodian_script_type_hash, rollup_type_hash, limit, cursor)
+                result = res['result']
+                for cell in result['objects']:
+                    c = convert_int(cell['output']['capacity'])
+                    print('current cell: {}'.format(c))
+                    capacity += c
 
-            cursor = result['last_cursor']
-            if cursor == "0x":
-                break
+                cursor = result['last_cursor']
+                print(cursor)
+                if cursor == "0x":
+                    break
+            except:
+                continue
         return capacity

@@ -21,9 +21,9 @@ class SchedCustodian:
 			else:
 				return None
 
-		pool = ThreadPool(processes=1)
-		self.task = pool.apply_async(get_custodian, (self.ckb_indexer_url, self.gw_config))
-		self.is_processing = True
+		with ThreadPool(processes=1) as pool:
+			self.task = pool.apply_async(get_custodian, (self.ckb_indexer_url, self.gw_config))
+			self.is_processing = True
 		return None
 
 
