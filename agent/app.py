@@ -13,7 +13,7 @@ from prometheus_client.core import CollectorRegistry, Gauge, Info
 from flask import Response, Flask
 import os
 
-import sched_cuustodian
+from agent.sched_cuustodian import get_custodian
 
 
 NodeFlask = Flask(__name__)
@@ -190,7 +190,6 @@ print("wait on custodian for the first time...")
 while sched_custodian.get_custodian() is None:
     sleep(1000)
 
-
 @NodeFlask.route("/metrics/godwoken")
 def exporter():
     registry = CollectorRegistry(auto_describe=False)
@@ -311,7 +310,7 @@ def exporter():
         node_BlockTimeDifference.labels(web3_url=web3_url).set(TimeDifference)
 
     one_ckb = 100_000_000
-    capacity = sched_cuustodian.get_custodian(ckb_indexer_url, gw_config)
+    capacity = get_custodian(ckb_indexer_url, gw_config)
     if capacity is not None:
         capacity = int(capacity / one_ckb)
         gw_custodian_capacity.labels(web3_url).set(capacity)

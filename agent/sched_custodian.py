@@ -1,3 +1,4 @@
+import traceback
 from agent.ckb_indexer import CKBIndexer
 import time
 
@@ -18,7 +19,10 @@ class SchedCustodian:
             if self.task.ready():
                 print("Ready.")
                 self.is_processing = False
-                return self.task.get()
+                try:
+                    return self.task.get()
+                except:
+                    print("task failed: {}".format(traceback.print_exc()))
             else:
                 print("Processing...")
                 return None
@@ -31,6 +35,9 @@ class SchedCustodian:
 
 
 def get_custodian(ckb_index_url, gw_config, last_block_number):
-    ckb_indexer = CKBIndexer(ckb_index_url)
-    last_finalized_block_numbrer = last_block_number - 450
-    return ckb_indexer.get_custodian_stats(gw_config, last_finalized_block_numbrer)
+    try:
+        ckb_indexer = CKBIndexer(ckb_index_url)
+        last_finalized_block_numbrer = last_block_number - 450
+        return ckb_indexer.get_custodian_stats(gw_config, last_finalized_block_numbrer)
+    except:
+        print("get custodian stats with error: {}".format(traceback.print_exc()))
