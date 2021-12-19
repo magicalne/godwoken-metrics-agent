@@ -11,6 +11,8 @@ from prometheus_client.core import CollectorRegistry, Gauge, Info
 from flask import Response, Flask
 import os
 
+import sched_cuustodian
+
 
 NodeFlask = Flask(__name__)
 web3_url = os.environ['WEB3_URL']
@@ -315,9 +317,10 @@ def exporter():
         ).set(TimeDifference)
 
     one_ckb = 100_000_000
-    # capacity = get_custodian_ckb(ckb_indexer, gw_config)
-    # capacity = int(capacity / one_ckb)
-    # gw_custodian_capacity.labels(web3_url).set(capacity)
+    capacity = sched_cuustodian.get_custodian(ckb_indexer_url, gw_config)
+    if capacity is not None:
+        capacity = int(capacity / one_ckb)
+        gw_custodian_capacity.labels(web3_url).set(capacity)
 
     cnt, amount = get_gw_stat_by_lock('deposit_lock', gw_rpc, LastBlockHash["last_block_hash"], ckb_rpc)
     gw_deposit_cnt.labels(web3_url=web3_url).set(cnt)
