@@ -41,3 +41,4 @@ def get_custodian(ckb_index_url, gw_config, last_block_number):
         return ckb_indexer.get_custodian_stats(gw_config, last_finalized_block_numbrer)
     except:
         print("get custodian stats with error: {}".format(traceback.print_exc()))
+        return -1
