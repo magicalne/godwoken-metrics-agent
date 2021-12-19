@@ -305,7 +305,7 @@ def exporter():
 
     one_ckb = 100_000_000
     capacity = get_custodian(ckb_indexer_url, gw_config, LastBlockDetail["blocknumber"])
-    if capacity is not None:
+    if capacity and isinstance(capacity, int):
         capacity = int(capacity / one_ckb)
         gw_custodian_capacity.labels(web3_url).set(capacity)
 
