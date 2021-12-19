@@ -87,7 +87,7 @@ class CKBIndexer(object):
                     custodian_script_type_hash, rollup_type_hash, limit, cursor
                 )
             except:
-                print('get_cells failed: {}'.format(traceback.format_exc()))
+                print("get_cells failed: {}".format(traceback.format_exc()))
                 continue
             result = res["result"]
             if result == "-1":
