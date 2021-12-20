@@ -260,7 +260,7 @@ def exporter():
 
     sudt_guage_dict = {
         k: {
-            "totoal_amount": Gauge(
+            "total_amount": Gauge(
                 "Node_" + v + "_TotalAmount",
                 "Get sudt: " + v + " total amount",
                 ["web3_url"],
