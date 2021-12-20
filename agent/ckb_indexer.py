@@ -99,8 +99,7 @@ class CKBIndexer(object):
 
                 args = cell["output"]["lock"]["args"]
                 block_number = get_deposit_block_number_from_args(args)
-                ## TODO: wrong direction?
-                is_finalized = block_number >= last_finalized_block_numbrer
+                is_finalized = block_number <= last_finalized_block_numbrer
                 if is_finalized:
                     finalized_capacity += c
 
