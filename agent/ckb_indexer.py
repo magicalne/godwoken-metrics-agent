@@ -106,7 +106,7 @@ class CKBIndexer(object):
                 cell_output_type = cell["output"]["type"]
                 output_data = cell["output_data"]
                 if cell_output_type is not None and output_data and output_data.strip():
-                    amount = hex_str_to_int(output_data)
+                    amount = output_data_to_int(output_data)
                     args = cell_output_type["args"]
                     if args in sudt_stats:
                         sudt = sudt_stats[args]
@@ -137,9 +137,10 @@ def get_deposit_block_number_from_args(args: str):
     return int.from_bytes(args[start:], byteorder="little", signed=False)
 
 
-def hex_str_to_int(s: str, byteorder="little", signed=False):
+def output_data_to_int(s: str, byteorder="little", signed=False):
     try:
         s = s.lstrip("0x")
+        s = s[:16]
         byte_arr = bytes.fromhex(s)
         return int.from_bytes(byte_arr, byteorder=byteorder, signed=signed)
     except:
