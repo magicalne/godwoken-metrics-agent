@@ -3,7 +3,7 @@
 import requests
 from time import sleep
 from agent.utils import convert_int
-from agent.ckb_indexer import CKBIndexer
+from agent.ckb_indexer import CKBIndexer, token_dict
 from agent.ckb_rpc import CkbRpc
 from agent.godwoken_rpc import GodwokenRpc
 from agent.gw_config import GwConfig, devnet_config, testnet_config, mainnet_config
@@ -237,6 +237,51 @@ def exporter():
         registry=registry,
     )
 
+    gw_custodian_finalized_capacity = Gauge(
+        "Node_Get_CustodianFinalizedCapacity",
+        "Get custodian finalized ckb capacity from ckb indexer",
+        ["web3_url"],
+        registry=registry,
+    )
+
+    gw_custodian_cell_count = Gauge(
+        "Node_Get_CustodianCellCount",
+        "Get custodian cell count from ckb indexer",
+        ["web3_url"],
+        registry=registry,
+    )
+
+    gw_custodian_ckb_cell_count = Gauge(
+        "Node_Get_CustodianCkbCellCount",
+        "Get custodian ckb cell count from ckb indexer",
+        ["web3_url"],
+        registry=registry,
+    )
+
+    sudt_guage_dict = {
+        k: {
+            "totoal_amount": Gauge(
+                "Node_" + v,
+                "Get sudt: " + v + " total amount",
+                ["web3_url"],
+                registry=registry,
+            ),
+            "finalized_amount": Gauge(
+                "Node_" + v,
+                "Get sudt: " + v + " finalized amount",
+                ["web3_url"],
+                registry=registry,
+            ),
+            "count": Gauge(
+                "Node_" + v,
+                "Get sudt: " + v + " count",
+                ["web3_url"],
+                registry=registry,
+            ),
+        }
+        for k, v in token_dict.items()
+    }
+
     gw_deposit_cnt = Gauge(
         "Node_Get_DepositCnt",
         "Get deposit count from current block",
@@ -310,10 +355,32 @@ def exporter():
         node_BlockTimeDifference.labels(web3_url=web3_url).set(TimeDifference)
 
     one_ckb = 100_000_000
-    capacity = get_custodian(ckb_indexer_url, gw_config, LastBlockDetail["blocknumber"])
-    if capacity and isinstance(capacity, int):
+    custodian_stats = get_custodian(
+        ckb_indexer_url, gw_config, LastBlockDetail["blocknumber"]
+    )
+    if custodian_stats:
+        sudt_stats = custodian_stats.sudt_stats
+        capacity = custodian_stats.capacity
+        finalized_capacity = custodian_stats.finalized_capacity
+        cell_count = custodian_stats.cell_count
+        ckb_cell_count = custodian_stats.ckb_cell_count
         capacity = int(capacity / one_ckb)
         gw_custodian_capacity.labels(web3_url).set(capacity)
+        finalized_capacity = int(finalized_capacity / one_ckb)
+        gw_custodian_finalized_capacity.labels(web3_url).set(finalized_capacity)
+        gw_custodian_cell_count.labels(web3_url).set(cell_count)
+        gw_custodian_ckb_cell_count.labels(web3_url).set(ckb_cell_count)
+
+        for args, stats in sudt_stats.items():
+            sudt_guage = sudt_guage_dict[args]
+            total_amount_guage = sudt_guage["total_amount"]
+            finalized_amount_guage = sudt_guage["finalized_amount"]
+            count_guage = sudt_guage["count"]
+            total_amount_guage.labels(web3_url).set(int(stats.total_amount / one_ckb))
+            finalized_amount_guage.labels(web3_url).set(
+                int(stats.finalized_amount / one_ckb)
+            )
+            count_guage.labels(web3_url).set(stats.count)
 
     cnt, amount = get_gw_stat_by_lock(
         "deposit_lock", gw_rpc, LastBlockHash["last_block_hash"], ckb_rpc
