@@ -261,19 +261,19 @@ def exporter():
     sudt_guage_dict = {
         k: {
             "totoal_amount": Gauge(
-                "Node_" + v,
+                "Node_" + v + "_TotalAmount",
                 "Get sudt: " + v + " total amount",
                 ["web3_url"],
                 registry=registry,
             ),
             "finalized_amount": Gauge(
-                "Node_" + v,
+                "Node_" + v + "_FinalizedAmount",
                 "Get sudt: " + v + " finalized amount",
                 ["web3_url"],
                 registry=registry,
             ),
             "count": Gauge(
-                "Node_" + v,
+                "Node_" + v + "_Count",
                 "Get sudt: " + v + " count",
                 ["web3_url"],
                 registry=registry,
