@@ -108,7 +108,6 @@ class CKBIndexer(object):
                 if cell_output_type:
                     amount = output_data_to_int(output_data)
                     args = cell_output_type["args"].lstrip("0x")
-                    print("args: {} amount: {}".format(args, amount))
                     if args in sudt_stats:
                         sudt = sudt_stats[args]
                         sudt.total_amount += amount
