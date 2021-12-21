@@ -127,7 +127,7 @@ class CKBIndexer(object):
                     if args in sudt_stats:
                         sudt = sudt_stats[args]
                         base = 10 ** sudt.decimals
-                        true_amount = int(amount / base)
+                        true_amount = amount / base
                         sudt.total_amount += true_amount
                         sudt.count += 1
                         if is_finalized:
