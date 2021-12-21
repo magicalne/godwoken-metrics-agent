@@ -367,12 +367,13 @@ def exporter():
         gw_custodian_ckb_cell_count.labels(web3_url).set(ckb_cell_count)
 
         for args, stats in sudt_stats.items():
+            base = 10 ** stats.decimals
             sudt_guage = sudt_guage_dict[args]
             total_amount_guage = sudt_guage["total_amount"]
             finalized_amount_guage = sudt_guage["finalized_amount"]
             count_guage = sudt_guage["count"]
-            total_amount_guage.labels(web3_url).set(stats.total_amount)
-            finalized_amount_guage.labels(web3_url).set(stats.finalized_amount)
+            total_amount_guage.labels(web3_url).set(stats.total_amount / base)
+            finalized_amount_guage.labels(web3_url).set(stats.finalized_amount / base)
             count_guage.labels(web3_url).set(stats.count)
 
     cnt, amount = get_gw_stat_by_lock(
