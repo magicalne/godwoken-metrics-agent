@@ -8,11 +8,26 @@ from agent.utils import convert_int
 from agent.gw_config import GwConfig
 
 token_dict: Dict = {
-    "5c4ac961a2428137f27271cf2af205e5c55156d26d9ac285ed3170e8c4cc1501": "USDC",
-    "1b89ae72b96c4f02fa7667ab46febcedf9b495737752176303ddd215d66a615a": "USDT",
-    "08430183dda1cbd81912c4762a3006a59e2291d5bd43b48bb7fa7544cace9e4a": "TAI",
-    "9657b32fcdc463e13ec9205914fd91c443822a949937ae94add9869e7f2e1de8": "ETH",
-    "e5451c05231e1df43e4b199b5d12dbed820dfbea2769943bb593f874526eeb55": "dCKB",
+    "5c4ac961a2428137f27271cf2af205e5c55156d26d9ac285ed3170e8c4cc1501": {
+        "name": "USDC",
+        "decimals": 6,
+    },
+    "1b89ae72b96c4f02fa7667ab46febcedf9b495737752176303ddd215d66a615a": {
+        "name": "USDT",
+        "decimals": 6,
+    },
+    "08430183dda1cbd81912c4762a3006a59e2291d5bd43b48bb7fa7544cace9e4a": {
+        "name": "TAI",
+        "decimals": 8,
+    },
+    "9657b32fcdc463e13ec9205914fd91c443822a949937ae94add9869e7f2e1de8": {
+        "name": "ETH",
+        "decimals": 18,
+    },
+    "e5451c05231e1df43e4b199b5d12dbed820dfbea2769943bb593f874526eeb55": {
+        "name": "dCKB",
+        "decimals": 8,
+    },
 }
 
 
@@ -20,6 +35,7 @@ token_dict: Dict = {
 class SudtStats:
     token: str
     args: str
+    decimals: int
     total_amount: int = 0
     finalized_amount: int = 0
     count: int = 0
@@ -110,10 +126,12 @@ class CKBIndexer(object):
                     args = cell_output_type["args"].lstrip("0x")
                     if args in sudt_stats:
                         sudt = sudt_stats[args]
-                        sudt.total_amount += amount
+                        base = 10 ** sudt.decimals
+                        true_amount = int(amount / base)
+                        sudt.total_amount += true_amount
                         sudt.count += 1
                         if is_finalized:
-                            sudt.finalized_amount += amount
+                            sudt.finalized_amount += true_amount
                         print(sudt)
                 else:
                     ckb_cell_count += 1
@@ -150,6 +168,8 @@ def output_data_to_int(s: str, byteorder="little", signed=False):
 
 def init_custodian(token_dict: Dict = token_dict) -> Dict[str, SudtStats]:
     res = {}
-    for args, token in token_dict.items():
-        res[args] = SudtStats(token=token, args=args)
+    for args, detail in token_dict.items():
+        res[args] = SudtStats(
+            token=detail["name"], args=args, decimals=detail["decimals"]
+        )
     return res
