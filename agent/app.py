@@ -275,7 +275,6 @@ def exporter():
         }
         for k, v in token_dict.items()
     }
-    print(sudt_guage_dict)
 
     gw_deposit_cnt = Gauge(
         "Node_Get_DepositCnt",

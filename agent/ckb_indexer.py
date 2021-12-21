@@ -130,7 +130,6 @@ class CKBIndexer(object):
                         sudt.count += 1
                         if is_finalized:
                             sudt.finalized_amount += amount
-                        print(sudt)
                 else:
                     ckb_cell_count += 1
 
