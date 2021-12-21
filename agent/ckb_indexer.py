@@ -126,12 +126,10 @@ class CKBIndexer(object):
                     args = cell_output_type["args"].lstrip("0x")
                     if args in sudt_stats:
                         sudt = sudt_stats[args]
-                        base = 10 ** sudt.decimals
-                        true_amount = amount / base
-                        sudt.total_amount += true_amount
+                        sudt.total_amount += amount
                         sudt.count += 1
                         if is_finalized:
-                            sudt.finalized_amount += true_amount
+                            sudt.finalized_amount += amount
                         print(sudt)
                 else:
                     ckb_cell_count += 1
