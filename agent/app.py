@@ -371,10 +371,8 @@ def exporter():
             total_amount_guage = sudt_guage["total_amount"]
             finalized_amount_guage = sudt_guage["finalized_amount"]
             count_guage = sudt_guage["count"]
-            total_amount_guage.labels(web3_url).set(int(stats.total_amount / one_ckb))
-            finalized_amount_guage.labels(web3_url).set(
-                int(stats.finalized_amount / one_ckb)
-            )
+            total_amount_guage.labels(web3_url).set(stats.total_amount)
+            finalized_amount_guage.labels(web3_url).set(stats.finalized_amount)
             count_guage.labels(web3_url).set(stats.count)
 
     cnt, amount = get_gw_stat_by_lock(
