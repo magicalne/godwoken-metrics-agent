@@ -9,7 +9,6 @@ prometheus-client = "*"
 Flask = "*"
 waitress = "*"
 pandas = "*"
-apscheduler = "*"
 
 [dev-packages]
 

@@ -13,7 +13,7 @@ from prometheus_client.core import CollectorRegistry, Gauge, Info
 from flask import Response, Flask
 import os
 
-from agent.sched_cuustodian import get_custodian
+from agent.sched_custodian import get_custodian
 
 
 NodeFlask = Flask(__name__)
@@ -141,10 +141,9 @@ def get_gw_stat_by_lock(lock_name, gw_rpc: GodwokenRpc, block_hash, ckb_rpc: Ckb
     tx = res["result"]["transaction_hash"]
     res = ckb_rpc.get_transaction(tx)
     inputs = res["result"]["transaction"]["inputs"]
-    cnt = 0
-    amount = 0
+    output_dict = {}
     if inputs is None or len(inputs) == 0:
-        return (cnt, amount)
+        return (0, 0)
     try:
         for i in inputs:
             tx_hash = i["previous_output"]["tx_hash"]
@@ -153,11 +152,11 @@ def get_gw_stat_by_lock(lock_name, gw_rpc: GodwokenRpc, block_hash, ckb_rpc: Ckb
             for o in outputs:
                 code_hash = o["lock"]["code_hash"]
                 if code_hash == lock_type_hash:
-                    cnt += 1
-                    amount += convert_int(o["capacity"])
-        return (cnt, amount)
+                    amount = convert_int(o["capacity"])
+                    output_dict[o["lock"]["args"]] = amount
+        return (len(output_dict), sum(output_dict.values()))
     except:
-        return (cnt, amount)
+        return (len(output_dict), sum(output_dict.values()))
 
 
 get_result = RpcGet(web3_url)
@@ -186,9 +185,8 @@ else:
             gw_config = testnet_config()
 
 sched_custodian = SchedCustodian(ckb_indexer_url, gw_config)
-print("wait on custodian for the first time...")
-while sched_custodian.get_custodian() is None:
-    sleep(1000)
+
+
 
 @NodeFlask.route("/metrics/godwoken")
 def exporter():
