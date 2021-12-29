@@ -185,9 +185,7 @@ else:
             gw_config = testnet_config()
 
 sched_custodian = SchedCustodian(ckb_indexer_url, gw_config)
-print("wait on custodian for the first time...")
-while sched_custodian.get_custodian() is None:
-    sleep(1000)
+
 
 
 @NodeFlask.route("/metrics/godwoken")
