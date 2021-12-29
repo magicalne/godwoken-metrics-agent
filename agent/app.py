@@ -13,7 +13,7 @@ from prometheus_client.core import CollectorRegistry, Gauge, Info
 from flask import Response, Flask
 import os
 
-from agent.sched_cuustodian import get_custodian
+from agent.sched_custodian import get_custodian
 
 
 NodeFlask = Flask(__name__)
@@ -189,6 +189,7 @@ sched_custodian = SchedCustodian(ckb_indexer_url, gw_config)
 print("wait on custodian for the first time...")
 while sched_custodian.get_custodian() is None:
     sleep(1000)
+
 
 @NodeFlask.route("/metrics/godwoken")
 def exporter():
