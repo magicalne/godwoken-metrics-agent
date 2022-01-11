@@ -190,6 +190,7 @@ else:
 sched_custodian = SchedCustodian(ckb_indexer_url, gw_config)
 
 
+@NodeFlask.route("/metrics/godwoken")
 @NodeFlask.route("/metrics/godwoken/<block_number>")
 def exporter(block_number=None):
     registry = CollectorRegistry(auto_describe=False)
