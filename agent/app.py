@@ -190,8 +190,11 @@ else:
 sched_custodian = SchedCustodian(ckb_indexer_url, gw_config)
 
 
-@NodeFlask.route("/metrics/godwoken")
 @NodeFlask.route("/metrics/godwoken/<block_number>")
+@NodeFlask.route(
+    "/metrics/godwoken",
+    defaults={"block_number": None},
+)
 def exporter(block_number=None):
     registry = CollectorRegistry(auto_describe=False)
 
@@ -311,7 +314,7 @@ def exporter(block_number=None):
     if block_number is None:
         LastBlockHeight = get_result.get_LastBlockHeight()
     else:
-        LastBlockHeight = block_number
+        LastBlockHeight = {"last_blocknumber": int(block_number)}
     if "-1" in LastBlockHeight.values():
         print(LastBlockHeight)
     else:
