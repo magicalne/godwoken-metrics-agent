@@ -38,7 +38,10 @@ class RpcGet(object):
         except:
             return {"last_blocknumber": "-1"}
 
-    def get_LastBlockHash(self):
+    def get_LastBlockHash(self, block_number=None):
+        if block_number is not None:
+            block_hash = self.get_block_hash(block_number)["blocknumber_hash"]
+            return {"last_block_hash": block_hash}
         headers = {"Content-Type": "application/json"}
         data = (
             '{"id":2, "jsonrpc":"2.0", "method":"gw_get_tip_block_hash", "params":[]}'
@@ -187,9 +190,8 @@ else:
 sched_custodian = SchedCustodian(ckb_indexer_url, gw_config)
 
 
-
-@NodeFlask.route("/metrics/godwoken")
-def exporter():
+@NodeFlask.route("/metrics/godwoken/<block_number>")
+def exporter(block_number=None):
     registry = CollectorRegistry(auto_describe=False)
 
     last_block_number = Gauge(
@@ -305,7 +307,10 @@ def exporter():
         registry=registry,
     )
 
-    LastBlockHeight = get_result.get_LastBlockHeight()
+    if block_number is None:
+        LastBlockHeight = get_result.get_LastBlockHeight()
+    else:
+        LastBlockHeight = block_number
     if "-1" in LastBlockHeight.values():
         print(LastBlockHeight)
     else:
@@ -325,7 +330,7 @@ def exporter():
     else:
         node_web3_clientVersion.labels(web3_url=web3_url).info(web3_clientVersion)
 
-    LastBlockHash = get_result.get_LastBlockHash()
+    LastBlockHash = get_result.get_LastBlockHash(block_number=block_number)
     LastBlockDetail = get_result.get_BlockDetail(LastBlockHash["last_block_hash"])
     if "-1" in LastBlockDetail.values():
         print(LastBlockDetail)
