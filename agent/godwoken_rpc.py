@@ -1,4 +1,5 @@
 import requests
+import logging
 from agent.utils import convert_int
 
 
@@ -27,6 +28,7 @@ class GodwokenRpc:
             r = requests.post(url="%s" % (self.url), json=payload, headers=headers)
             return r.json()
         except:
+            logging.exception("Error get block committed info. block hash %s", block_hash)
             return {"result": "-1"}
 
     def get_block_by_number(self, number):

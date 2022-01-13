@@ -1,5 +1,6 @@
 # encoding: utf-8
 
+import logging
 import requests
 from time import sleep
 from agent.utils import convert_int
@@ -36,9 +37,13 @@ class RpcGet(object):
             replay = r.json()["result"]
             return {"last_blocknumber": convert_int(replay)}
         except:
+            logging.error("Error getting block height", exc_info=True)
             return {"last_blocknumber": "-1"}
 
-    def get_LastBlockHash(self):
+    def get_LastBlockHash(self, block_number=None):
+        if block_number is not None:
+            block_hash = self.get_block_hash(block_number)["blocknumber_hash"]
+            return {"last_block_hash": block_hash}
         headers = {"Content-Type": "application/json"}
         data = (
             '{"id":2, "jsonrpc":"2.0", "method":"gw_get_tip_block_hash", "params":[]}'
@@ -48,6 +53,11 @@ class RpcGet(object):
             replay = r.json()["result"]
             return {"last_block_hash": str(replay)}
         except:
+            logging.error(
+                "Error getting last block hash, block number: %d",
+                block_number,
+                exc_info=True,
+            )
             return {"last_block_hash": "-1"}
 
     def get_BlockDetail(self, block_hash):
@@ -68,6 +78,9 @@ class RpcGet(object):
                 ),
             }
         except:
+            logging.error(
+                "Error get block detail, block hash: %s", block_hash, exc_info=True
+            )
             return {
                 "blocknumber": "-1",
                 "parent_block_hash": "-1",
@@ -94,6 +107,7 @@ class RpcGet(object):
                 ),
             }
         except:
+            logging.error("Error get block detail by number: %d", number, exc_info=True)
             return {
                 "blocknumber": "-1",
                 "commit_transactions": "-1",
@@ -112,6 +126,7 @@ class RpcGet(object):
             replay = r.json()["result"]
             return {"blocknumber_hash": str(replay)}
         except:
+            logging.error("Error get block hash. block number: %d", blocknumber)
             return {"blocknumber_hash": "-1"}
 
     def get_gw_ping(self):
@@ -156,6 +171,7 @@ def get_gw_stat_by_lock(lock_name, gw_rpc: GodwokenRpc, block_hash, ckb_rpc: Ckb
                     output_dict[o["lock"]["args"]] = amount
         return (len(output_dict), sum(output_dict.values()))
     except:
+        logging.error("Error get stat by lock: %s", lock_type_hash, exc_info=True)
         return (len(output_dict), sum(output_dict.values()))
 
 
@@ -165,7 +181,7 @@ ckb_indexer = CKBIndexer(ckb_indexer_url)
 ckb_rpc = CkbRpc(ckb_rpc_url)
 gw_config = mainnet_config() if net_env.lower() == "mainnet" else testnet_config()
 if net_env is None:
-    print("net_env is None, use testnet config")
+    logging.info("net_env is None, use testnet config")
     gw_config = testnet_config()
 else:
     net_env = net_env.lower()
@@ -174,12 +190,12 @@ else:
     elif net_env == "testnet":
         gw_config = testnet_config()
     else:
-        print("use devnet")
+        logging.info("use devnet")
         rollup_result_path = os.environ["ROLLUP_RESULT_PATH"]
         scripts_result_path = os.environ["SCRIPTS_RESULT_PATH"]
         gw_config = devnet_config(rollup_result_path, scripts_result_path)
         if gw_config == -1:
-            print(
+            logging.info(
                 "the env var: [ROLLUP_RESULT_PATH] and [SCRIPTS_RESULT_PATH] are not found, use testnet"
             )
             gw_config = testnet_config()
@@ -187,9 +203,12 @@ else:
 sched_custodian = SchedCustodian(ckb_indexer_url, gw_config)
 
 
-
-@NodeFlask.route("/metrics/godwoken")
-def exporter():
+@NodeFlask.route("/metrics/godwoken/<block_number>")
+@NodeFlask.route(
+    "/metrics/godwoken",
+    defaults={"block_number": None},
+)
+def exporter(block_number=None):
     registry = CollectorRegistry(auto_describe=False)
 
     last_block_number = Gauge(
@@ -304,10 +323,19 @@ def exporter():
         ["web3_url"],
         registry=registry,
     )
+    gw_tps = Gauge(
+        "Node_TPS",
+        "Get current TPS betweenn last 2 blocks",
+        ["web3_url"],
+        registry=registry,
+    )
 
-    LastBlockHeight = get_result.get_LastBlockHeight()
+    if block_number is None:
+        LastBlockHeight = get_result.get_LastBlockHeight()
+    else:
+        LastBlockHeight = {"last_blocknumber": int(block_number)}
     if "-1" in LastBlockHeight.values():
-        print(LastBlockHeight)
+        logging.info("error block heeight: %s", LastBlockHeight)
     else:
         last_block_number.labels(web3_url=web3_url).set(
             LastBlockHeight["last_blocknumber"]
@@ -325,7 +353,7 @@ def exporter():
     else:
         node_web3_clientVersion.labels(web3_url=web3_url).info(web3_clientVersion)
 
-    LastBlockHash = get_result.get_LastBlockHash()
+    LastBlockHash = get_result.get_LastBlockHash(block_number=block_number)
     LastBlockDetail = get_result.get_BlockDetail(LastBlockHash["last_block_hash"])
     if "-1" in LastBlockDetail.values():
         print(LastBlockDetail)
@@ -349,6 +377,9 @@ def exporter():
         node_BlockDetail_transactions.labels(web3_url=web3_url).set(
             LastBlockDetail["commit_transactions"]
         )
+
+        tps = LastBlockDetail["commit_transactions"] / TimeDifference
+        gw_tps.labels(web3_url=web3_url).set(tps)
 
         node_BlockTimeDifference.labels(web3_url=web3_url).set(TimeDifference)
 

@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 from typing import Dict
+import logging
 
 import requests
 import traceback
@@ -27,6 +28,14 @@ token_dict: Dict = {
     "e5451c05231e1df43e4b199b5d12dbed820dfbea2769943bb593f874526eeb55": {
         "name": "dCKB",
         "decimals": 8,
+    },
+    "578cd6ab8c0800e6fbc17b58633857dac5626883af89f842e79cb8f7af24de75": {
+        "name": "BNB",
+        "decimals": 18,
+    },
+    "69c215249102308356778d58259c91c0f1988f6f5b07aa614921ee1803ea0059": {
+        "name": "BUSD",
+        "decimals": 18,
     },
 }
 
@@ -154,12 +163,12 @@ def get_deposit_block_number_from_args(args: str):
 
 def output_data_to_int(s: str, byteorder="little", signed=False):
     try:
-        s = s.lstrip("0x")
-        s = s[:16]
+        if s.startswith("0x"):
+            s = s[2:]
         byte_arr = bytes.fromhex(s)
         return int.from_bytes(byte_arr, byteorder=byteorder, signed=signed)
     except:
-        print("convert hex: {} to int Error: {}".format(s, traceback.format_exc()))
+        logging.exception("convert hex: %s to int Error.", s)
         return 0
 
 
