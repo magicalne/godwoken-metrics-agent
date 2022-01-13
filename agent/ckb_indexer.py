@@ -162,9 +162,10 @@ def get_deposit_block_number_from_args(args: str):
 
 def output_data_to_int(s: str, byteorder="little", signed=False):
     try:
-        s = s.lstrip("0x")
-        byte_arr = str.encode(s)
-        return int.from_bytes(byte_arr[:16], byteorder=byteorder, signed=signed)
+        if s.startswith("0x"):
+            s = s[2:]
+        byte_arr = bytes.fromhex(s)
+        return int.from_bytes(byte_arr, byteorder=byteorder, signed=signed)
     except:
         logging.exception("convert hex: %s to int Error.", s)
         return 0
