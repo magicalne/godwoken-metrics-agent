@@ -379,7 +379,7 @@ def exporter(block_number=None):
         )
 
         tps = LastBlockDetail["commit_transactions"] / TimeDifference
-        gw_tps.labels(web3_url=web3_url).set()
+        gw_tps.labels(web3_url=web3_url).set(tps)
 
         node_BlockTimeDifference.labels(web3_url=web3_url).set(TimeDifference)
 
