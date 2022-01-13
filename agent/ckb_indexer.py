@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 from typing import Dict
+import logging
 
 import requests
 import traceback
@@ -130,6 +131,11 @@ class CKBIndexer(object):
                         sudt.count += 1
                         if is_finalized:
                             sudt.finalized_amount += amount
+                        if (
+                            args
+                            == "9657b32fcdc463e13ec9205914fd91c443822a949937ae94add9869e7f2e1de8"
+                        ):
+                            logging.info('eth output data: %s, stat: %s', output_data, sudt)
                 else:
                     ckb_cell_count += 1
 
