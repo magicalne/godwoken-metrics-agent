@@ -139,7 +139,7 @@ class CKBIndexer(object):
                         sudt.count += 1
                         if is_finalized:
                             sudt.finalized_amount += amount
-                        if zhe li |(
+                        if (
                             args
                             == "9657b32fcdc463e13ec9205914fd91c443822a949937ae94add9869e7f2e1de8"
                         ):
