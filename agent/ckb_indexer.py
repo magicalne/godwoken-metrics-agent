@@ -29,6 +29,14 @@ token_dict: Dict = {
         "name": "dCKB",
         "decimals": 8,
     },
+    "578cd6ab8c0800e6fbc17b58633857dac5626883af89f842e79cb8f7af24de75": {
+        "name": "BNB",
+        "decimals": 18,
+    },
+    "69c215249102308356778d58259c91c0f1988f6f5b07aa614921ee1803ea0059": {
+        "name": "BUSD",
+        "decimals": 18,
+    },
 }
 
 
@@ -131,7 +139,7 @@ class CKBIndexer(object):
                         sudt.count += 1
                         if is_finalized:
                             sudt.finalized_amount += amount
-                        if (
+                        if zhe li |(
                             args
                             == "9657b32fcdc463e13ec9205914fd91c443822a949937ae94add9869e7f2e1de8"
                         ):

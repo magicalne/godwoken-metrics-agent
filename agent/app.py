@@ -323,6 +323,12 @@ def exporter(block_number=None):
         ["web3_url"],
         registry=registry,
     )
+    gw_tps = Gauge(
+        "Node_TPS",
+        "Get current TPS betweenn last 2 blocks",
+        ["web3_url"],
+        registry=registry,
+    )
 
     if block_number is None:
         LastBlockHeight = get_result.get_LastBlockHeight()
@@ -371,6 +377,9 @@ def exporter(block_number=None):
         node_BlockDetail_transactions.labels(web3_url=web3_url).set(
             LastBlockDetail["commit_transactions"]
         )
+
+        tps = LastBlockDetail["commit_transactions"] / TimeDifference
+        Node_TPS.labels(web3_url=web3_url).set()
 
         node_BlockTimeDifference.labels(web3_url=web3_url).set(TimeDifference)
 
