@@ -130,6 +130,8 @@ class RpcGet(object):
 
     def get_block_hash(self, blocknumber):
         headers = {"Content-Type": "application/json"}
+        if type(blocknumber) == int:
+            blocknumber = hex(blocknumber)
         data = (
             '{"id":2, "jsonrpc":"2.0", "method":"gw_get_block_hash", "params":["%s"]}'
             % (blocknumber))
