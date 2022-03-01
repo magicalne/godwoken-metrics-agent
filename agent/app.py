@@ -202,7 +202,6 @@ else:
 
 sched_custodian = SchedCustodian(ckb_indexer_url, gw_config)
 
-
 @NodeFlask.route("/metrics/godwoken/<block_number>")
 @NodeFlask.route(
     "/metrics/godwoken",
@@ -330,16 +329,8 @@ def exporter(block_number=None):
         registry=registry,
     )
 
-    if block_number is None:
-        LastBlockHeight = get_result.get_LastBlockHeight()
-    else:
-        LastBlockHeight = {"last_blocknumber": int(block_number)}
-    if "-1" in LastBlockHeight.values():
-        logging.info("error block heeight: %s", LastBlockHeight)
-    else:
-        last_block_number.labels(web3_url=web3_url).set(
-            LastBlockHeight["last_blocknumber"]
-        )
+    tip_number = gw_rpc.get_tip_number()
+    last_block_number.labels(web3_url=web3_url).set(tip_number)
 
     gw_ping = get_result.get_gw_ping()
     if "-1" in gw_ping.values():

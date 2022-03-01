@@ -28,8 +28,8 @@ WEB3_URL=http://localhost:8024
 GW_RPC_URL=http://localhost:8119
 CKB_INDEXER_URL=http://localhost:8116
 CKB_RPC_URL=http://localhost:8114
-ROLLUP_RESULT_PATH=/home/magicalne/Documents/rollup_result.json
-SCRIPTS_RESULT_PATH=/home/magicalne/git/nervos/godwoken-kicker/workspace/deploy/scripts-deploy.json
+ROLLUP_RESULT_PATH=rollup_result.json
+SCRIPTS_RESULT_PATH=scripts-deploy.json
 NET_ENV=devnet
 ```
 
@@ -39,11 +39,10 @@ NET_ENV=devnet
 
 ```shell
 
-pipenv run python -m agent http://localhost:8024 3000
+pipenv run python -m agent 3000
 ```
 
 - `3000` is the port we are running on.
-- `http://localhost:8024` is the godwoken web3 url.
 
 ### Checkout some metrics
 
