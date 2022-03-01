@@ -16,7 +16,6 @@ import os
 
 from agent.sched_custodian import get_custodian
 
-
 NodeFlask = Flask(__name__)
 web3_url = os.environ["WEB3_URL"]
 gw_rpc_url = os.environ["GW_RPC_URL"]
@@ -26,6 +25,7 @@ net_env = os.environ["NET_ENV"]
 
 
 class RpcGet(object):
+
     def __init__(self, web3_url):
         self.web3_url = web3_url
 
@@ -33,7 +33,9 @@ class RpcGet(object):
         headers = {"Content-Type": "application/json"}
         data = '{"id":2, "jsonrpc":"2.0", "method":"eth_blockNumber", "params":[]}'
         try:
-            r = requests.post(url="%s" % (self.web3_url), data=data, headers=headers)
+            r = requests.post(url="%s" % (self.web3_url),
+                              data=data,
+                              headers=headers)
             replay = r.json()["result"]
             return {"last_blocknumber": convert_int(replay)}
         except:
@@ -49,7 +51,9 @@ class RpcGet(object):
             '{"id":2, "jsonrpc":"2.0", "method":"gw_get_tip_block_hash", "params":[]}'
         )
         try:
-            r = requests.post(url="%s" % (self.web3_url), data=data, headers=headers)
+            r = requests.post(url="%s" % (self.web3_url),
+                              data=data,
+                              headers=headers)
             replay = r.json()["result"]
             return {"last_block_hash": str(replay)}
         except:
@@ -63,24 +67,28 @@ class RpcGet(object):
     def get_BlockDetail(self, block_hash):
         headers = {"Content-Type": "application/json"}
         data = '{"id":2, "jsonrpc":"2.0", "method":"gw_get_block", "params":["%s"]}' % (
-            block_hash
-        )
+            block_hash)
         try:
-            r = requests.post(url="%s" % (self.web3_url), data=data, headers=headers)
+            r = requests.post(url="%s" % (self.web3_url),
+                              data=data,
+                              headers=headers)
             replay = r.json()["result"]
             return {
-                "blocknumber": convert_int(replay["block"]["raw"]["number"]),
-                "parent_block_hash": replay["block"]["raw"]["parent_block_hash"],
-                "commit_transactions": len(replay["block"]["transactions"]),
-                "transactions": replay["block"]["transactions"],
-                "blocknumber_timestamp": convert_int(
-                    replay["block"]["raw"]["timestamp"]
-                ),
+                "blocknumber":
+                convert_int(replay["block"]["raw"]["number"]),
+                "parent_block_hash":
+                replay["block"]["raw"]["parent_block_hash"],
+                "commit_transactions":
+                len(replay["block"]["transactions"]),
+                "transactions":
+                replay["block"]["transactions"],
+                "blocknumber_timestamp":
+                convert_int(replay["block"]["raw"]["timestamp"]),
             }
         except:
-            logging.error(
-                "Error get block detail, block hash: %s", block_hash, exc_info=True
-            )
+            logging.error("Error get block detail, block hash: %s",
+                          block_hash,
+                          exc_info=True)
             return {
                 "blocknumber": "-1",
                 "parent_block_hash": "-1",
@@ -93,21 +101,26 @@ class RpcGet(object):
         headers = {"Content-Type": "application/json"}
         data = (
             '{"id":2, "jsonrpc":"2.0", "method":"gw_get_block_by_number", "params":["%s"]}'
-            % (number)
-        )
+            % (number))
         try:
-            r = requests.post(url="%s" % (self.web3_url), data=data, headers=headers)
+            r = requests.post(url="%s" % (self.web3_url),
+                              data=data,
+                              headers=headers)
             replay = r.json()["result"]
             return {
-                "blocknumber": convert_int(replay["block"]["raw"]["number"]),
-                "commit_transactions": len(replay["block"]["transactions"]),
-                "transactions": replay["block"]["transactions"],
-                "blocknumber_timestamp": convert_int(
-                    replay["block"]["raw"]["timestamp"]
-                ),
+                "blocknumber":
+                convert_int(replay["block"]["raw"]["number"]),
+                "commit_transactions":
+                len(replay["block"]["transactions"]),
+                "transactions":
+                replay["block"]["transactions"],
+                "blocknumber_timestamp":
+                convert_int(replay["block"]["raw"]["timestamp"]),
             }
         except:
-            logging.error("Error get block detail by number: %d", number, exc_info=True)
+            logging.error("Error get block detail by number: %d",
+                          number,
+                          exc_info=True)
             return {
                 "blocknumber": "-1",
                 "commit_transactions": "-1",
@@ -119,21 +132,25 @@ class RpcGet(object):
         headers = {"Content-Type": "application/json"}
         data = (
             '{"id":2, "jsonrpc":"2.0", "method":"gw_get_block_hash", "params":["%s"]}'
-            % (blocknumber)
-        )
+            % (blocknumber))
         try:
-            r = requests.post(url="%s" % (self.web3_url), data=data, headers=headers)
+            r = requests.post(url="%s" % (self.web3_url),
+                              data=data,
+                              headers=headers)
             replay = r.json()["result"]
             return {"blocknumber_hash": str(replay)}
         except:
-            logging.error("Error get block hash. block number: %d", blocknumber)
+            logging.error("Error get block hash. block number: %d",
+                          blocknumber)
             return {"blocknumber_hash": "-1"}
 
     def get_gw_ping(self):
         headers = {"Content-Type": "application/json"}
         data = '{"id":2, "jsonrpc":"2.0", "method":"gw_ping", "params":[]}'
         try:
-            r = requests.post(url="%s" % (self.web3_url), data=data, headers=headers)
+            r = requests.post(url="%s" % (self.web3_url),
+                              data=data,
+                              headers=headers)
             replay = r.json()["result"]
             return {"gw_ping_status": replay}
         except:
@@ -143,14 +160,17 @@ class RpcGet(object):
         headers = {"Content-Type": "application/json"}
         data = '{"id":1, "jsonrpc":"2.0", "method":"web3_clientVersion", "params":[]}'
         try:
-            r = requests.post(url="%s" % (self.web3_url), data=data, headers=headers)
+            r = requests.post(url="%s" % (self.web3_url),
+                              data=data,
+                              headers=headers)
             replay = r.json()["result"]
             return {"web3_clientVersion": replay}
         except:
             return {"web3_clientVersion": "-1"}
 
 
-def get_gw_stat_by_lock(lock_name, gw_rpc: GodwokenRpc, block_hash, ckb_rpc: CkbRpc):
+def get_gw_stat_by_lock(lock_name, gw_rpc: GodwokenRpc, block_hash,
+                        ckb_rpc: CkbRpc):
     lock_type_hash = gw_config.get_lock_type_hash(lock_name)
     res = gw_rpc.gw_get_block_committed_info(block_hash)
     tx = res["result"]["transaction_hash"]
@@ -171,7 +191,9 @@ def get_gw_stat_by_lock(lock_name, gw_rpc: GodwokenRpc, block_hash, ckb_rpc: Ckb
                     output_dict[o["lock"]["args"]] = amount
         return (len(output_dict), sum(output_dict.values()))
     except:
-        logging.error("Error get stat by lock: %s", lock_type_hash, exc_info=True)
+        logging.error("Error get stat by lock: %s",
+                      lock_type_hash,
+                      exc_info=True)
         return (len(output_dict), sum(output_dict.values()))
 
 
@@ -179,7 +201,8 @@ get_result = RpcGet(web3_url)
 gw_rpc = GodwokenRpc(gw_rpc_url)
 ckb_indexer = CKBIndexer(ckb_indexer_url)
 ckb_rpc = CkbRpc(ckb_rpc_url)
-gw_config = mainnet_config() if net_env.lower() == "mainnet" else testnet_config()
+gw_config = mainnet_config() if net_env.lower(
+) == "mainnet" else testnet_config()
 if net_env is None:
     logging.info("net_env is None, use testnet config")
     gw_config = testnet_config()
@@ -202,6 +225,7 @@ else:
 
 sched_custodian = SchedCustodian(ckb_indexer_url, gw_config)
 
+
 @NodeFlask.route("/metrics/godwoken/<block_number>")
 @NodeFlask.route(
     "/metrics/godwoken",
@@ -210,13 +234,13 @@ sched_custodian = SchedCustodian(ckb_indexer_url, gw_config)
 def exporter(block_number=None):
     registry = CollectorRegistry(auto_describe=False)
 
-    last_block_number = Gauge(
-        "Node_Get_LastBlockNumber", "LAST_BLOCK_NUMBER", ["web3_url"], registry=registry
-    )
+    last_block_number = Gauge("Node_Get_LastBlockNumber",
+                              "LAST_BLOCK_NUMBER", ["web3_url"],
+                              registry=registry)
 
-    node_gw_ping = Gauge(
-        "Node_Get_Gw_Ping", "Node_GW_PING", ["web3_url", "gw_ping"], registry=registry
-    )
+    node_gw_ping = Gauge("Node_Get_Gw_Ping",
+                         "Node_GW_PING", ["web3_url", "gw_ping"],
+                         registry=registry)
     node_web3_clientVersion = Info(
         "Node_Get_Web3_ClientVersion",
         "Node_Web3_ClientVersion",
@@ -227,7 +251,10 @@ def exporter(block_number=None):
     node_LastBlockInfo = Gauge(
         "Node_Get_LastBlockInfo",
         "Get LastBlockInfo, label include last_block_hash, last_blocknumber. value is last_block_timestamp;",
-        ["web3_url", "last_block_hash", "last_blocknumber", "last_block_timestamp"],
+        [
+            "web3_url", "last_block_hash", "last_blocknumber",
+            "last_block_timestamp"
+        ],
         registry=registry,
     )
 
@@ -276,19 +303,22 @@ def exporter(block_number=None):
 
     sudt_guage_dict = {
         k: {
-            "total_amount": Gauge(
+            "total_amount":
+            Gauge(
                 "Node_" + v["name"] + "_TotalAmount",
                 "Get sudt: " + v["name"] + " total amount",
                 ["web3_url"],
                 registry=registry,
             ),
-            "finalized_amount": Gauge(
+            "finalized_amount":
+            Gauge(
                 "Node_" + v["name"] + "_FinalizedAmount",
                 "Get sudt: " + v["name"] + " finalized amount",
                 ["web3_url"],
                 registry=registry,
             ),
-            "count": Gauge(
+            "count":
+            Gauge(
                 "Node_" + v["name"] + "_Count",
                 "Get sudt: " + v["name"] + " count",
                 ["web3_url"],
@@ -336,27 +366,29 @@ def exporter(block_number=None):
     if "-1" in gw_ping.values():
         print(gw_ping)
     else:
-        node_gw_ping.labels(web3_url=web3_url, gw_ping=gw_ping["gw_ping_status"]).set(1)
+        node_gw_ping.labels(web3_url=web3_url,
+                            gw_ping=gw_ping["gw_ping_status"]).set(1)
 
     web3_clientVersion = get_result.web3_clientVersion()
     if "-1" in web3_clientVersion.values():
         print(web3_clientVersion)
     else:
-        node_web3_clientVersion.labels(web3_url=web3_url).info(web3_clientVersion)
+        node_web3_clientVersion.labels(
+            web3_url=web3_url).info(web3_clientVersion)
 
-    LastBlockHash = get_result.get_LastBlockHash(block_number=block_number)
-    LastBlockDetail = get_result.get_BlockDetail(LastBlockHash["last_block_hash"])
+    LastBlockHash = get_result.get_LastBlockHash(block_number=tip_number)
+    LastBlockDetail = get_result.get_BlockDetail(
+        LastBlockHash["last_block_hash"])
     if "-1" in LastBlockDetail.values():
         print(LastBlockDetail)
     else:
         PreviousBlock_hash = get_result.get_block_hash(
-            hex((LastBlockDetail["blocknumber"]) - 1)
-        )
+            hex((LastBlockDetail["blocknumber"]) - 1))
         PreviousBlockDetail = get_result.get_BlockDetail(
-            PreviousBlock_hash["blocknumber_hash"]
-        )
+            PreviousBlock_hash["blocknumber_hash"])
         LastBlock_Time = convert_int(LastBlockDetail["blocknumber_timestamp"])
-        PreviousBlock_Time = convert_int(PreviousBlockDetail["blocknumber_timestamp"])
+        PreviousBlock_Time = convert_int(
+            PreviousBlockDetail["blocknumber_timestamp"])
         TimeDifference = abs(LastBlock_Time - PreviousBlock_Time)
         node_LastBlockInfo.labels(
             web3_url=web3_url,
@@ -366,8 +398,7 @@ def exporter(block_number=None):
         ).set(TimeDifference)
 
         node_BlockDetail_transactions.labels(web3_url=web3_url).set(
-            LastBlockDetail["commit_transactions"]
-        )
+            LastBlockDetail["commit_transactions"])
 
         tps = LastBlockDetail["commit_transactions"] / TimeDifference * 1000
         gw_tps.labels(web3_url=web3_url).set(tps)
@@ -375,9 +406,8 @@ def exporter(block_number=None):
         node_BlockTimeDifference.labels(web3_url=web3_url).set(TimeDifference)
 
     one_ckb = 100_000_000
-    custodian_stats = get_custodian(
-        ckb_indexer_url, gw_config, LastBlockDetail["blocknumber"]
-    )
+    custodian_stats = get_custodian(ckb_indexer_url, gw_config,
+                                    LastBlockDetail["blocknumber"])
     if custodian_stats:
         sudt_stats = custodian_stats.sudt_stats
         capacity = custodian_stats.capacity
@@ -387,31 +417,34 @@ def exporter(block_number=None):
         capacity = int(capacity / one_ckb)
         gw_custodian_capacity.labels(web3_url).set(capacity)
         finalized_capacity = int(finalized_capacity / one_ckb)
-        gw_custodian_finalized_capacity.labels(web3_url).set(finalized_capacity)
+        gw_custodian_finalized_capacity.labels(web3_url).set(
+            finalized_capacity)
         gw_custodian_cell_count.labels(web3_url).set(cell_count)
         gw_custodian_ckb_cell_count.labels(web3_url).set(ckb_cell_count)
 
         for args, stats in sudt_stats.items():
-            base = 10 ** stats.decimals
+            base = 10**stats.decimals
             sudt_guage = sudt_guage_dict[args]
             total_amount_guage = sudt_guage["total_amount"]
             finalized_amount_guage = sudt_guage["finalized_amount"]
             count_guage = sudt_guage["count"]
             total_amount_guage.labels(web3_url).set(stats.total_amount / base)
-            finalized_amount_guage.labels(web3_url).set(stats.finalized_amount / base)
+            finalized_amount_guage.labels(web3_url).set(
+                stats.finalized_amount / base)
             count_guage.labels(web3_url).set(stats.count)
 
-    cnt, amount = get_gw_stat_by_lock(
-        "deposit_lock", gw_rpc, LastBlockHash["last_block_hash"], ckb_rpc
-    )
+    cnt, amount = get_gw_stat_by_lock("deposit_lock", gw_rpc,
+                                      LastBlockHash["last_block_hash"],
+                                      ckb_rpc)
     gw_deposit_cnt.labels(web3_url=web3_url).set(cnt)
     amount = int(amount / one_ckb)
     gw_deposit_capacity.labels(web3_url=web3_url).set(amount)
-    cnt, amount = get_gw_stat_by_lock(
-        "withdrawal_lock", gw_rpc, LastBlockHash["last_block_hash"], ckb_rpc
-    )
+    cnt, amount = get_gw_stat_by_lock("withdrawal_lock", gw_rpc,
+                                      LastBlockHash["last_block_hash"],
+                                      ckb_rpc)
     amount = int(amount / one_ckb)
     gw_withdrawal_cnt.labels(web3_url=web3_url).set(cnt)
     gw_withdrawal_capacity.labels(web3_url=web3_url).set(amount)
 
-    return Response(prometheus_client.generate_latest(registry), mimetype="text/plain")
+    return Response(prometheus_client.generate_latest(registry),
+                    mimetype="text/plain")
