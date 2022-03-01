@@ -100,8 +100,6 @@ class GodwokenRpc:
 
     def get_tip_number(self):
         tip_block_hash = self.get_tip_block_hash()['result']
-        tip = self.get_block( tip_block_hash)
-        logging.info("tip_block_hash = %s", tip_block_hash)
-        logging.info("tip = %s", tip)
+        tip = self.get_block(tip_block_hash)
         tip_number = tip['result']['block']['raw']['number']
         return convert_int(tip_number)
