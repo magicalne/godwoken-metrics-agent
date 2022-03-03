@@ -72,7 +72,8 @@ class RpcGet(object):
             r = requests.post(url="%s" % (self.web3_url),
                               data=data,
                               headers=headers)
-            replay = r.json()["result"]
+            res = r.json()
+            replay = res["result"]
             return {
                 "blocknumber":
                 convert_int(replay["block"]["raw"]["number"]),
@@ -86,9 +87,9 @@ class RpcGet(object):
                 convert_int(replay["block"]["raw"]["timestamp"]),
             }
         except:
-            logging.error("Error get block detail, block hash: %s",
-                          block_hash,
-                          exc_info=True)
+            logging.exception(
+                "Error get block detail, block hash: %s, res: %s", block_hash,
+                res)
             return {
                 "blocknumber": "-1",
                 "parent_block_hash": "-1",
