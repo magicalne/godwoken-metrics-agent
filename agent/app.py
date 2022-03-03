@@ -361,8 +361,16 @@ def exporter(block_number=None):
         registry=registry,
     )
 
-    tip_number = gw_rpc.get_tip_number()
-    last_block_number.labels(web3_url=web3_url).set(tip_number)
+    if block_number is None:
+        tip_number = gw_rpc.get_tip_number()
+        LastBlockHeight = {"last_blocknumber": tip_number}
+    else:
+        LastBlockHeight = {"last_blocknumber": int(block_number)}
+    if "-1" in LastBlockHeight.values():
+        logging.info("error block heeight: %s", LastBlockHeight)
+    else:
+        last_block_number.labels(web3_url=web3_url).set(
+            LastBlockHeight["last_blocknumber"])
 
     gw_ping = get_result.get_gw_ping()
     if "-1" in gw_ping.values():
@@ -378,7 +386,7 @@ def exporter(block_number=None):
         node_web3_clientVersion.labels(
             web3_url=web3_url).info(web3_clientVersion)
 
-    LastBlockHash = get_result.get_LastBlockHash(block_number=tip_number)
+    LastBlockHash = get_result.get_LastBlockHash(block_number=block_number)
     LastBlockDetail = get_result.get_BlockDetail(
         LastBlockHash["last_block_hash"])
     if "-1" in LastBlockDetail.values():
