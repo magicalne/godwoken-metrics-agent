@@ -176,6 +176,8 @@ def get_gw_stat_by_lock(lock_name, gw_rpc: GodwokenRpc, block_hash,
                         ckb_rpc: CkbRpc):
     lock_type_hash = gw_config.get_lock_type_hash(lock_name)
     res = gw_rpc.gw_get_block_committed_info(block_hash)
+    if res is None or res['result'] is None:
+        return (0, 0)
     tx = res["result"]["transaction_hash"]
     res = ckb_rpc.get_transaction(tx)
     inputs = res["result"]["transaction"]["inputs"]
