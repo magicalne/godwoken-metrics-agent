@@ -60,6 +60,7 @@ class CustodianStats:
 
 
 class CKBIndexer(object):
+
     def __init__(self, url):
         self.url = url
 
@@ -67,9 +68,12 @@ class CKBIndexer(object):
         limit = hex(limit)
         headers = {"Content-Type": "application/json"}
         payload = {
-            "id": 1,
-            "jsonrpc": "2.0",
-            "method": "get_cells",
+            "id":
+            1,
+            "jsonrpc":
+            "2.0",
+            "method":
+            "get_cells",
             "params": [
                 {
                     "script": {
@@ -86,7 +90,9 @@ class CKBIndexer(object):
         if cursor is not None:
             payload["params"].append(cursor)
         try:
-            r = requests.post(url="%s" % (self.url), json=payload, headers=headers)
+            r = requests.post(url="%s" % (self.url),
+                              json=payload,
+                              headers=headers)
 
             return r.json()
         except Exception:
@@ -94,10 +100,10 @@ class CKBIndexer(object):
 
             return {"result": "-1"}
 
-    def get_custodian_stats(
-        self, gw_config: GwConfig, last_finalized_block_numbrer
-    ) -> CustodianStats:
-        custodian_script_type_hash = gw_config.get_lock_type_hash("custodian_lock")
+    def get_custodian_stats(self, gw_config: GwConfig,
+                            last_finalized_block_numbrer) -> CustodianStats:
+        custodian_script_type_hash = gw_config.get_lock_type_hash(
+            "custodian_lock")
         rollup_type_hash = gw_config.get_rollup_type_hash()
         capacity = 0
         finalized_capacity = 0
@@ -106,11 +112,11 @@ class CKBIndexer(object):
         cursor = None
         sudt_stats = init_custodian()
         limit = 1000
+        cnt = 0
         while True:
             try:
-                res = self.get_cells(
-                    custodian_script_type_hash, rollup_type_hash, limit, cursor
-                )
+                res = self.get_cells(custodian_script_type_hash,
+                                     rollup_type_hash, limit, cursor)
             except:
                 print("get_cells failed: {}".format(traceback.format_exc()))
                 continue
@@ -142,12 +148,13 @@ class CKBIndexer(object):
                 else:
                     ckb_cell_count += 1
 
+            logging.info(f"loaded {cnt} page of custodian cells")
             cursor = result["last_cursor"]
             if cursor == "0x":
                 break
-        custodian_stats = CustodianStats(
-            sudt_stats, capacity, finalized_capacity, cell_count, ckb_cell_count
-        )
+        custodian_stats = CustodianStats(sudt_stats, capacity,
+                                         finalized_capacity, cell_count,
+                                         ckb_cell_count)
         return custodian_stats
 
 
@@ -175,7 +182,7 @@ def output_data_to_int(s: str, byteorder="little", signed=False):
 def init_custodian(token_dict: Dict = token_dict) -> Dict[str, SudtStats]:
     res = {}
     for args, detail in token_dict.items():
-        res[args] = SudtStats(
-            token=detail["name"], args=args, decimals=detail["decimals"]
-        )
+        res[args] = SudtStats(token=detail["name"],
+                              args=args,
+                              decimals=detail["decimals"])
     return res

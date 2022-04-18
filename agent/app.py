@@ -16,6 +16,7 @@ import threading
 
 from agent.sched_custodian import get_custodian
 
+DISABLE_CUSTODIAN_STATS = 'DISABLE_CUSTODIAN_STATS'
 NodeFlask = Flask(__name__)
 web3_url = os.environ["WEB3_URL"]
 gw_rpc_url = os.environ["GW_RPC_URL"]
@@ -271,6 +272,7 @@ class JobThread(threading.Thread):
         global WithdrawalCapacity
 
         while True:
+            logging.info("Start running")
             if BlockNumber is None:
                 LastBlockNumber = self.gw_rpc.get_tip_number()
             else:
@@ -301,10 +303,11 @@ class JobThread(threading.Thread):
                 TPS = LastBlockDetail[
                     "commit_transactions"] / BlockTimeDifference * 1000
             one_ckb = 100_000_000
-            logging.info("Loading custodian stats")
-            CustodianStats = get_custodian(self.ckb_indexer_url,
-                                           self.gw_config,
-                                           LastBlockDetail["blocknumber"])
+            if DISABLE_CUSTODIAN_STATS not in os.environ:
+                logging.info("Loading custodian stats")
+                CustodianStats = get_custodian(self.ckb_indexer_url,
+                                               self.gw_config,
+                                               LastBlockDetail["blocknumber"])
             logging.info("Loading deposit stats")
             DepositCount, DepositCapacity = get_gw_stat_by_lock(
                 "deposit_lock", self.gw_rpc, LastBlockHash["last_block_hash"],
