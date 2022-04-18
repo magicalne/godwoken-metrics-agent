@@ -305,19 +305,30 @@ class JobThread(threading.Thread):
             one_ckb = 100_000_000
             if DISABLE_CUSTODIAN_STATS not in os.environ:
                 logging.info("Loading custodian stats")
-                CustodianStats = get_custodian(self.ckb_indexer_url,
-                                               self.gw_config,
-                                               LastBlockDetail["blocknumber"])
+                try:
+                    CustodianStats = get_custodian(
+                        self.ckb_indexer_url, self.gw_config,
+                        LastBlockDetail["blocknumber"])
+                except:
+                    logging.error("Failed to get custodian stats")
             logging.info("Loading deposit stats")
-            DepositCount, DepositCapacity = get_gw_stat_by_lock(
-                "deposit_lock", self.gw_rpc, LastBlockHash["last_block_hash"],
-                self.ckb_rpc, self.gw_config)
-            DepositCapacity = DepositCapacity / one_ckb
+            try:
+                DepositCount, DepositCapacity = get_gw_stat_by_lock(
+                    "deposit_lock", self.gw_rpc,
+                    LastBlockHash["last_block_hash"], self.ckb_rpc,
+                    self.gw_config)
+                DepositCapacity = DepositCapacity / one_ckb
+            except:
+                logging.error("Failed to get deposit stats")
             logging.info("Loading withdrawal stats")
-            WithdrawalCount, WithdrawalCapacity = get_gw_stat_by_lock(
-                "withdrawal_lock", self.gw_rpc,
-                LastBlockHash["last_block_hash"], self.ckb_rpc, self.gw_config)
-            WithdrawalCapacity = WithdrawalCapacity / one_ckb
+            try:
+                WithdrawalCount, WithdrawalCapacity = get_gw_stat_by_lock(
+                    "withdrawal_lock", self.gw_rpc,
+                    LastBlockHash["last_block_hash"], self.ckb_rpc,
+                    self.gw_config)
+                WithdrawalCapacity = WithdrawalCapacity / one_ckb
+            except:
+                loggint.error("Failed to get withdrawal stats")
 
 
 job = JobThread()
