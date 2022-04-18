@@ -34,10 +34,10 @@ BlockTimeDifference = None
 TPS = None
 CommitTransacionCount = None
 CustodianStats = None
-DepositCount = None
-DepositCapacity = None
-WithdrawalCount = None
-WithdrawalCapacity = None
+DepositCount = 0
+DepositCapacity = 0
+WithdrawalCount = 0
+WithdrawalCapacity = 0
 
 
 class RpcGet(object):
@@ -301,13 +301,16 @@ class JobThread(threading.Thread):
                 TPS = LastBlockDetail[
                     "commit_transactions"] / BlockTimeDifference * 1000
             one_ckb = 100_000_000
+            logging.info("Loading custodian stats")
             CustodianStats = get_custodian(self.ckb_indexer_url,
                                            self.gw_config,
                                            LastBlockDetail["blocknumber"])
+            logging.info("Loading deposit stats")
             DepositCount, DepositCapacity = get_gw_stat_by_lock(
                 "deposit_lock", self.gw_rpc, LastBlockHash["last_block_hash"],
                 self.ckb_rpc, self.gw_config)
             DepositCapacity = DepositCapacity / one_ckb
+            logging.info("Loading withdrawal stats")
             WithdrawalCount, WithdrawalCapacity = get_gw_stat_by_lock(
                 "withdrawal_lock", self.gw_rpc,
                 LastBlockHash["last_block_hash"], self.ckb_rpc, self.gw_config)
