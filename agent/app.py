@@ -329,7 +329,7 @@ class JobThread(threading.Thread):
                     self.gw_config)
                 WithdrawalCapacity = WithdrawalCapacity / one_ckb
             except:
-                loggint.error("Failed to get withdrawal stats")
+                logging.error("Failed to get withdrawal stats")
 
 
 job = JobThread()
