@@ -23,6 +23,7 @@ gw_rpc_url = os.environ["GW_RPC_URL"]
 ckb_indexer_url = os.environ["CKB_INDEXER_URL"]
 ckb_rpc_url = os.environ["CKB_RPC_URL"]
 net_env = os.environ["NET_ENV"]
+logging.info(f"net_env: {net_env}")
 
 BlockNumber = None
 ## GLOBAL METRICS
