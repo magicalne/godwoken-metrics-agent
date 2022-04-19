@@ -308,7 +308,7 @@ class JobThread(threading.Thread):
                         self.ckb_indexer_url, self.gw_config,
                         LastBlockDetail["blocknumber"])
                 except:
-                    logging.error("Failed to get custodian stats")
+                    logging.exception("Failed to get custodian stats")
             logging.info("Loading deposit stats")
             try:
                 DepositCount, DepositCapacity = get_gw_stat_by_lock(
@@ -317,7 +317,7 @@ class JobThread(threading.Thread):
                     self.gw_config)
                 DepositCapacity = DepositCapacity / one_ckb
             except:
-                logging.error("Failed to get deposit stats")
+                logging.exception("Failed to get deposit stats")
             logging.info("Loading withdrawal stats")
             try:
                 WithdrawalCount, WithdrawalCapacity = get_gw_stat_by_lock(
@@ -326,7 +326,7 @@ class JobThread(threading.Thread):
                     self.gw_config)
                 WithdrawalCapacity = WithdrawalCapacity / one_ckb
             except:
-                logging.error("Failed to get withdrawal stats")
+                logging.exception("Failed to get withdrawal stats")
 
 
 job = JobThread()
