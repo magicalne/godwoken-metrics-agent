@@ -105,9 +105,8 @@ class RpcGet(object):
                 convert_int(replay["block"]["raw"]["timestamp"]),
             }
         except:
-            logging.exception(
-                "Error get block detail, block hash: %s, res: %s", block_hash,
-                res)
+            logging.exception("Error get block detail, block hash: %s",
+                              block_hash)
             return {
                 "blocknumber": "-1",
                 "parent_block_hash": "-1",
@@ -137,9 +136,7 @@ class RpcGet(object):
                 convert_int(replay["block"]["raw"]["timestamp"]),
             }
         except:
-            logging.error("Error get block detail by number: %d",
-                          number,
-                          exc_info=True)
+            logging.exception("Error get block detail by number: %d", number)
             return {
                 "blocknumber": "-1",
                 "commit_transactions": "-1",
