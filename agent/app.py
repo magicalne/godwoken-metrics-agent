@@ -270,6 +270,7 @@ class JobThread(threading.Thread):
         global WithdrawalCapacity
 
         while True:
+            sleep(2)
             logging.info("Start running")
             if BlockNumber is None:
                 LastBlockNumber = self.gw_rpc.get_tip_number()
