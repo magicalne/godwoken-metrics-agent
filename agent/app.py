@@ -286,12 +286,16 @@ class JobThread(threading.Thread):
             LastBlockDetail = self.get_result.get_BlockDetail(
                 LastBlockHash["last_block_hash"])
             if "-1" in LastBlockDetail.values():
-                print(LastBlockDetail)
+                print(f'LastBlockDetail: {LastBlockDetail}')
+                continue
             else:
                 PreviousBlock_hash = self.get_result.get_block_hash(
                     hex((LastBlockDetail["blocknumber"]) - 1))
                 PreviousBlockDetail = self.get_result.get_BlockDetail(
                     PreviousBlock_hash["blocknumber_hash"])
+                if "-1" in PreviousBlockDetail.values():
+                    print(f'PreviousBlockDetail: {PreviousBlockDetail}')
+                    continue
                 LastBlock_Time = convert_int(
                     LastBlockDetail["blocknumber_timestamp"])
                 LastBlockTimestamp = LastBlock_Time
@@ -469,6 +473,8 @@ def exporter(block_number=None):
         registry=registry,
     )
 
+    global LastBlockNumber
+    print(LastBlockNumber)
     last_block_number.labels(web3_url=web3_url).set(LastBlockNumber)
 
     node_gw_ping.labels(web3_url=web3_url,
