@@ -273,7 +273,11 @@ class JobThread(threading.Thread):
             sleep(2)
             logging.info("Start running")
             if BlockNumber is None:
-                LastBlockNumber = self.gw_rpc.get_tip_number()
+                try:
+                    LastBlockNumber = self.gw_rpc.get_tip_number()
+                except:
+                    logging.exception("Cannot get tip number")
+                    continue
             else:
                 LastBlockNumber = BlockNumber
 
@@ -474,7 +478,6 @@ def exporter(block_number=None):
     )
 
     global LastBlockNumber
-    print(LastBlockNumber)
     last_block_number.labels(web3_url=web3_url).set(LastBlockNumber)
 
     node_gw_ping.labels(web3_url=web3_url,
