@@ -270,7 +270,7 @@ class JobThread(threading.Thread):
         global WithdrawalCapacity
 
         while True:
-            sleep(2)
+            sleep(5)
             logging.info("Start running")
             if BlockNumber is None:
                 try:
@@ -281,34 +281,42 @@ class JobThread(threading.Thread):
             else:
                 LastBlockNumber = BlockNumber
 
-            Ping = self.get_result.get_gw_ping()
-            Web3Version = self.get_result.web3_clientVersion()
+            try:
+                Ping = self.get_result.get_gw_ping()
+                Web3Version = self.get_result.web3_clientVersion()
 
-            LastBlockHash = self.get_result.get_LastBlockHash(
-                block_number=LastBlockNumber)
+                LastBlockHash = self.get_result.get_LastBlockHash(
+                    block_number=LastBlockNumber)
 
-            LastBlockDetail = self.get_result.get_BlockDetail(
-                LastBlockHash["last_block_hash"])
-            if "-1" in LastBlockDetail.values():
-                print(f'LastBlockDetail: {LastBlockDetail}')
-                continue
-            else:
-                PreviousBlock_hash = self.get_result.get_block_hash(
-                    hex((LastBlockDetail["blocknumber"]) - 1))
-                PreviousBlockDetail = self.get_result.get_BlockDetail(
-                    PreviousBlock_hash["blocknumber_hash"])
-                if "-1" in PreviousBlockDetail.values():
-                    print(f'PreviousBlockDetail: {PreviousBlockDetail}')
+                LastBlockDetail = self.get_result.get_BlockDetail(
+                    LastBlockHash["last_block_hash"])
+                if "-1" in LastBlockDetail.values():
+                    print(f'LastBlockDetail: {LastBlockDetail}')
                     continue
-                LastBlock_Time = convert_int(
-                    LastBlockDetail["blocknumber_timestamp"])
-                LastBlockTimestamp = LastBlock_Time
-                PreviousBlock_Time = convert_int(
-                    PreviousBlockDetail["blocknumber_timestamp"])
-                BlockTimeDifference = abs(LastBlock_Time - PreviousBlock_Time)
-                CommitTransacionCount = LastBlockDetail["commit_transactions"]
-                TPS = LastBlockDetail[
-                    "commit_transactions"] / BlockTimeDifference * 1000
+                else:
+                    PreviousBlock_hash = self.get_result.get_block_hash(
+                        hex((LastBlockDetail["blocknumber"]) - 1))
+                    if "-1" in PreviousBlock_hash.values():
+                        continue
+                    PreviousBlockDetail = self.get_result.get_BlockDetail(
+                        PreviousBlock_hash["blocknumber_hash"])
+                    if "-1" in PreviousBlockDetail.values():
+                        print(f'PreviousBlockDetail: {PreviousBlockDetail}')
+                        continue
+                    LastBlock_Time = convert_int(
+                        LastBlockDetail["blocknumber_timestamp"])
+                    LastBlockTimestamp = LastBlock_Time
+                    PreviousBlock_Time = convert_int(
+                        PreviousBlockDetail["blocknumber_timestamp"])
+                    BlockTimeDifference = abs(LastBlock_Time -
+                                              PreviousBlock_Time)
+                    CommitTransacionCount = LastBlockDetail[
+                        "commit_transactions"]
+                    TPS = LastBlockDetail[
+                        "commit_transactions"] / BlockTimeDifference * 1000
+            except:
+                ## ignore any exception
+                continue
             one_ckb = 100_000_000
             if DISABLE_CUSTODIAN_STATS not in os.environ:
                 logging.info("Loading custodian stats")
