@@ -46,7 +46,7 @@ def testnet_v1_1_config():
     url = "https://raw.githubusercontent.com/nervosnetwork/godwoken-info/info/testnet_v1_1/%s"
     return get_config(prefix_url=url,
                       scirpts_result_name="scripts-deploy-result.json",
-                      rollup_result_name="rollup-config.json")
+                      rollup_result_name="genesis-deploy-result.json")
 
 
 def devnet_config(rollup_result_path, scripts_result_path):
