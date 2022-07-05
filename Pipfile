@@ -5,10 +5,12 @@ name = "pypi"
 
 [packages]
 requests = "*"
+pysocks = "*"
 prometheus-client = "*"
 Flask = "*"
 waitress = "*"
 pandas = "*"
+toml = "*"
 
 [dev-packages]
 

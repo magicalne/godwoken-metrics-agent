@@ -8,7 +8,7 @@ from agent.ckb_indexer import CKBIndexer, token_dict
 from agent.ckb_rpc import CkbRpc
 from agent.godwoken_rpc import GodwokenRpc
 from agent.gw_config import GwConfig, devnet_config, testnet_config, \
-    testnet_v1_1_config, mainnet_config
+    testnet_v1_1_config, mainnet_config, mainnet_v1_config
 import prometheus_client
 from prometheus_client.core import CollectorRegistry, Gauge, Info
 from flask import Response, Flask
@@ -244,6 +244,8 @@ class JobThread(threading.Thread):
                 self.gw_config = testnet_config()
             elif net_env == "testnet_v1_1":
                 self.gw_config = testnet_v1_1_config()
+            elif net_env == "mainnet_v1":
+                self.gw_config = mainnet_v1_config()
             else:
                 logging.info("use devnet")
                 rollup_result_path = os.environ["ROLLUP_RESULT_PATH"]
