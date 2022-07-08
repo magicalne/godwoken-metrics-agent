@@ -1,4 +1,5 @@
 import json
+import toml
 import requests
 
 
@@ -26,6 +27,21 @@ def get_config(prefix_url, scirpts_result_name, rollup_result_name):
     rollup_result_url = prefix_url % rollup_result_name
     rollup_result = requests.get(rollup_result_url).json()
     return GwConfig(rollup_result=rollup_result, scripts_result=scripts_result)
+
+
+def mainnet_v1_config():
+    url = "https://raw.githubusercontent.com/nervosnetwork/godwoken-info/main/mainnet_v1/%s"
+    rollup_url = url % "gw-mainnet_v1-config-readonly.toml"
+    scripts_result_url = url % "scripts-deploy-result.json"
+    ## load rollup config
+    text = requests.get(rollup_url).text
+    config_dict = toml.loads(text)
+    rollup_result = {
+        "rollup_type_hash": config_dict['genesis']['rollup_type_hash']
+    }
+    ## load scripts result
+    scripts_result = requests.get(scripts_result_url).json()
+    return GwConfig((rollup_result), scripts_result)
 
 
 def mainnet_config():
