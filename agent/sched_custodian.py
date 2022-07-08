@@ -37,7 +37,7 @@ class SchedCustodian:
 def get_custodian(ckb_index_url, gw_config, last_block_number):
     try:
         ckb_indexer = CKBIndexer(ckb_index_url)
-        last_finalized_block_numbrer = last_block_number - 450
+        last_finalized_block_numbrer = last_block_number - gw_config.finality_blocks
         return ckb_indexer.get_custodian_stats(gw_config, last_finalized_block_numbrer)
     except:
         print("get custodian stats with error: {}".format(traceback.print_exc()))
