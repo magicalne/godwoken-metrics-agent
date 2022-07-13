@@ -1,19 +1,14 @@
 from time import sleep
 import unittest
-from agent.sched_custodian import SchedCustodian
+from agent.sched_custodian import get_custodian 
 from agent.gw_config import testnet_config
 
 
 class TestSchedCustodian(unittest.TestCase):
     def setUp(self) -> None:
-        gw_config = testnet_config()
-        self.sched = SchedCustodian("https://testnet.ckb.dev/indexer", gw_config)
+        self.gw_config = testnet_config()
+        self.indexer_url = "https://testnet.ckb.dev/indexer"
 
-    def test(self):
-        while True:
-            res = self.sched.get_custodian(60000000000)
-            if res is not None:
-                print(res)
-                return
-            print("sleep 1 sec...")
-            sleep(1)
+    def test_get_custodian(self) -> None:
+        custodian = get_custodian(self.indexer_url, self.gw_config, 171987)
+        print(f'custodian: {custodian}')
