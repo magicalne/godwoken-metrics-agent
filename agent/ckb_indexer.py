@@ -158,14 +158,14 @@ class CKBIndexer(object):
         return custodian_stats
 
 
-## parse mol format
+## parse mol format in godwoken.mol#CustodianLockArgs
 def get_deposit_block_number_from_args(args: str):
     if args.startswith("0x"):
         args = args[2:]
     args = bytes.fromhex(args)
     args = args[32:]
-    start = int.from_bytes(args[12:16], byteorder="little", signed=False)
-    return int.from_bytes(args[start:], byteorder="little", signed=False)
+    start = int.from_bytes(args[8:12], byteorder="little", signed=False)
+    return int.from_bytes(args[start:start+8], byteorder="little", signed=False)
 
 
 def output_data_to_int(s: str, byteorder="little", signed=False):
