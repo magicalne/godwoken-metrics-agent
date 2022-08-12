@@ -49,7 +49,7 @@ def mainnet_v1_config():
 
 
 def mainnet_config():
-    url = "https://raw.githubusercontent.com/nervosnetwork/godwoken-info/master/mainnet/config/%s"
+    url = "https://raw.githubusercontent.com/nervosnetwork/godwoken-info/main/mainnet_v0/config/%s"
     return get_config(prefix_url=url,
                       scirpts_result_name="scripts-result.json",
                       rollup_result_name="rollup-result.json",
@@ -57,7 +57,7 @@ def mainnet_config():
 
 
 def testnet_config():
-    url = "https://raw.githubusercontent.com/nervosnetwork/godwoken-info/master/testnet/config/%s"
+    url = "https://raw.githubusercontent.com/nervosnetwork/godwoken-info/main/testnet_v0/config/%s"
     return get_config(prefix_url=url,
                       scirpts_result_name="scripts-deploy-result.json",
                       rollup_result_name="genesis.json",
