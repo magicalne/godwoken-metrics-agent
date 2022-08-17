@@ -15,7 +15,6 @@ pipenv install
 
 ```txt
 # .env
-WEB3_URL=http://godwoken-testnet-web3-rpc.ckbapp.dev
 GW_RPC_URL=http://18.167.4.134:30119
 CKB_INDEXER_URL=https://testnet.ckb.dev/indexer
 CKB_RPC_URL=https://testnet.ckb.dev/rpc
@@ -24,7 +23,6 @@ NET_ENV=testnet
 
 ### devnet
 ```
-WEB3_URL=http://localhost:8024
 GW_RPC_URL=http://localhost:8119
 CKB_INDEXER_URL=http://localhost:8116
 CKB_RPC_URL=http://localhost:8114
