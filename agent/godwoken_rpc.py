@@ -107,6 +107,7 @@ class GodwokenRpc(JsonRPC):
 
     def get_tip_number(self):
         tip_block_hash = self.get_tip_block_hash()
+        print(f'tip block hash: {tip_block_hash}')
         tip = self.get_block(tip_block_hash)
         tip_number = tip['block']['raw']['number']
         return convert_int(tip_number)

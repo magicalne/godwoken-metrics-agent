@@ -24,7 +24,6 @@ class JsonRPC:
             r.raise_for_status()
             return r.json()["result"]
         except Exception as e:
-            print("test")
             logging.error(f"Submit request to {self.url}, method: {method}, params: {params}", exc_info = e)
             raise RPCException from None
             
