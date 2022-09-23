@@ -32,7 +32,7 @@ LastBlockHash = None
 LastBlockTimestamp = None
 BlockTimeDifference = None
 TPS = None
-CommitTransacionCount = 0
+CommitTransacionCount = {}
 CustodianStats = None
 DepositDict = {}
 WithdrawalDict = {}
@@ -95,7 +95,7 @@ def update_metrics(tip_number, ping, last_block_hash: str,
         LastBlockTimestamp = last_block_ts
         BlockTimeDifference = block_time_diff
         TPS = tps
-        CommitTransacionCount += tx_cnt
+        CommitTransacionCount[tip_number] = tx_cnt
         DepositDict[tip_number] = deposit
         WithdrawalDict[tip_number] = withdrawal
 
@@ -108,7 +108,7 @@ def reset_metrics():
         global CommitTransacionCount
         global DepositDict
         global WithdrawalDict
-        CommitTransacionCount = 0
+        CommitTransacionCount = {}
         DepositDict = {}
         WithdrawalDict = {}
 
@@ -389,7 +389,7 @@ def exporter(block_number=None):
     ).set(BlockTimeDifference)
 
     node_BlockDetail_transactions.labels(
-        gw_rpc_url=gw_rpc_url).set(CommitTransacionCount)
+        gw_rpc_url=gw_rpc_url).set(sum(CommitTransacionCount.values()))
 
     gw_tps.labels(gw_rpc_url=gw_rpc_url).set(TPS)
 
