@@ -34,10 +34,8 @@ BlockTimeDifference = None
 TPS = None
 CommitTransacionCount = 0
 CustodianStats = None
-DepositCount = 0
-DepositCapacity = 0
-WithdrawalCount = 0
-WithdrawalCapacity = 0
+DepositDict = {}
+WithdrawalDict = {}
 
 TaskLock = threading.Lock()
 
@@ -79,8 +77,7 @@ def update_metrics(tip_number, ping, last_block_hash: str,
                    block_time_diff: int,
                    tps,
                    tx_cnt: int,
-                   deposit_cnt, deposit_capacity,
-                   withdrawal_cnt, withdrawal_capacity):
+                   deposit, withdrawal):
     with TaskLock:
         global BlockNumber
         global Ping
@@ -89,10 +86,8 @@ def update_metrics(tip_number, ping, last_block_hash: str,
         global BlockTimeDifference
         global TPS
         global CommitTransacionCount
-        global DepositCount
-        global DepositCapacity
-        global WithdrawalCount
-        global WithdrawalCapacity
+        global DepositDict
+        global WithdrawalDict
 
         BlockNumber = tip_number
         Ping = ping
@@ -101,10 +96,8 @@ def update_metrics(tip_number, ping, last_block_hash: str,
         BlockTimeDifference = block_time_diff
         TPS = tps
         CommitTransacionCount += tx_cnt
-        DepositCount += deposit_cnt
-        DepositCapacity += deposit_capacity
-        WithdrawalCount += withdrawal_cnt
-        WithdrawalCapacity += withdrawal_capacity
+        DepositDict[tip_number] = deposit
+        WithdrawalDict[tip_number] = withdrawal
 
 
 """
@@ -113,15 +106,11 @@ Reset metrics after being scraped by grafana successfully.
 def reset_metrics():
     with TaskLock:
         global CommitTransacionCount
-        global DepositCount
-        global DepositCapacity
-        global WithdrawalCount
-        global WithdrawalCapacity
+        global DepositDict
+        global WithdrawalDict
         CommitTransacionCount = 0
-        DepositCount = 0
-        DepositCapacity = 0
-        WithdrawalCount = 0
-        WithdrawalCapacity = 0
+        DepositDict = {}
+        WithdrawalDict = {}
 
 """
 General metrics job.
@@ -173,14 +162,11 @@ class JobThread(threading.Thread):
         while True:
             sleep(1)
             logging.info("Start running")
-            if BlockNumber is None:
-                try:
-                    tip_number = self.gw_rpc.get_tip_number()
-                except:
-                    logging.exception("Cannot get tip number")
-                    continue
-            else:
-                tip_number = BlockNumber + 1
+            try:
+                tip_number = self.gw_rpc.get_tip_number()
+            except:
+                logging.exception("Cannot get tip number")
+                continue
 
             try:
                 ping = self.gw_rpc.ping()
@@ -202,24 +188,21 @@ class JobThread(threading.Thread):
             except:
                 logging.exception("get block info failed")
                 continue
-            one_ckb = 100_000_000
             logging.info("Loading deposit stats")
             try:
-                deposit_cnt, deposit_capacity = get_gw_stat_by_lock(
+                deposit = get_gw_stat_by_lock(
                     "deposit_lock", self.gw_rpc,
                     last_block_hash, self.ckb_rpc,
                     self.gw_config)
-                deposit_capacity = deposit_capacity / one_ckb
             except:
                 logging.exception("Failed to get deposit stats")
                 continue
             logging.info("Loading withdrawal stats")
             try:
-                withdrawal_cnt, withdrawal_capacity = get_gw_stat_by_lock(
+                withdrawal = get_gw_stat_by_lock(
                     "withdrawal_lock", self.gw_rpc,
                     last_block_hash, self.ckb_rpc,
                     self.gw_config)
-                withdrawal_capacity = withdrawal_capacity / one_ckb
             except:
                 logging.exception("Failed to get withdrawal stats")
                 continue
@@ -231,10 +214,8 @@ class JobThread(threading.Thread):
                     block_time_diff,
                     tps,
                     tx_cnt,
-                    deposit_cnt,
-                    deposit_capacity,
-                    withdrawal_cnt,
-                    withdrawal_capacity)
+                    deposit,
+                    withdrawal)
 
 
 """
@@ -439,10 +420,24 @@ def exporter(block_number=None):
                 stats.finalized_amount / base)
             count_guage.labels(gw_rpc_url).set(stats.count)
 
-    gw_deposit_cnt.labels(gw_rpc_url=gw_rpc_url).set(DepositCount)
-    gw_deposit_capacity.labels(gw_rpc_url=gw_rpc_url).set(DepositCapacity)
-    gw_withdrawal_cnt.labels(gw_rpc_url=gw_rpc_url).set(WithdrawalCount)
-    gw_withdrawal_capacity.labels(gw_rpc_url=gw_rpc_url).set(WithdrawalCapacity)
+    deposit_cnt = 0
+    deposit_capacity = 0
+    for _, (cnt, capacity) in DepositDict.items():
+        deposit_cnt += cnt
+        deposit_capacity += capacity
+    withdrawal_cnt = 0
+    withdrawal_capacity = 0
+    for _, (cnt, capacity) in WithdrawalDict.items():
+        withdrawal_cnt += cnt
+        withdrawal_capacity += capacity
+    one_ckb = 100_000_000
+    deposit_capacity = deposit_capacity / one_ckb
+    withdrawal_capacity = withdrawal_capacity / one_ckb
+
+    gw_deposit_cnt.labels(gw_rpc_url=gw_rpc_url).set(deposit_cnt)
+    gw_deposit_capacity.labels(gw_rpc_url=gw_rpc_url).set(deposit_capacity)
+    gw_withdrawal_cnt.labels(gw_rpc_url=gw_rpc_url).set(withdrawal_cnt)
+    gw_withdrawal_capacity.labels(gw_rpc_url=gw_rpc_url).set(withdrawal_capacity)
 
     reset_metrics()
     return Response(prometheus_client.generate_latest(registry),

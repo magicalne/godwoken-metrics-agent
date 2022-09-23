@@ -24,7 +24,7 @@ class GwStat:
             for i in inputs:
                 tx_hash = i["previous_output"]["tx_hash"]
                 res = self.ckb_rpc.get_transaction(tx_hash)
-                outputs = res["result"]["transaction"]["outputs"]
+                outputs = res["transaction"]["outputs"]
                 for o in outputs:
                     code_hash = o["lock"]["code_hash"]
                     if code_hash == lock_type_hash:

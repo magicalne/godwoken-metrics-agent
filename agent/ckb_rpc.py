@@ -1,5 +1,3 @@
-import requests
-import logging
 from agent.json_rpc import JsonRPC
 
 
