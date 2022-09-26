@@ -89,15 +89,15 @@ def update_metrics(tip_number, ping, last_block_hash: str,
         global DepositDict
         global WithdrawalDict
 
-        BlockNumber = tip_number
         Ping = ping
         LastBlockHash = last_block_hash
         LastBlockTimestamp = last_block_ts
         BlockTimeDifference = block_time_diff
         TPS = tps
-        CommitTransacionCount[tip_number] = tx_cnt
-        DepositDict[tip_number] = deposit
-        WithdrawalDict[tip_number] = withdrawal
+        CommitTransacionCount[BlockNumber] = tx_cnt
+        DepositDict[BlockNumber] = deposit
+        WithdrawalDict[BlockNumber] = withdrawal
+        BlockNumber = tip_number # increase tip in the end
 
 
 """
