@@ -20,11 +20,11 @@ class JsonRPC:
         }
         try:
             r = requests.post(url="%s" % (self.url), json=payload, headers=headers)
-            logging.info(f"Access {self.url} {method} status: {r.status_code}")
+            logging.debug(f"Access {self.url} {method} status: {r.status_code}")
             r.raise_for_status()
             return r.json()["result"]
         except Exception as e:
-            logging.error(f"Submit request to {self.url}, method: {method}, params: {params}", exc_info = e)
+            logging.warn(f"Submit request to {self.url}, method: {method}, params: {params}", exc_info = e)
             raise RPCException from None
             
 

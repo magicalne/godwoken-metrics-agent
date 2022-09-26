@@ -44,7 +44,7 @@ def get_gw_stat_by_lock(lock_name, gw_rpc: GodwokenRpc, block_hash,
     lock_type_hash = gw_config.get_lock_type_hash(lock_name)
     res = gw_rpc.gw_get_block_committed_info(block_hash)
     if res is None or res is None:
-        return (0, 0)
+        raise Exception(f"Block hash: {block_hash} isn't committed.")
     tx = res["transaction_hash"]
     res = ckb_rpc.get_transaction(tx)
     inputs = res["transaction"]["inputs"]
@@ -105,12 +105,16 @@ Reset metrics after being scraped by grafana successfully.
 """
 def reset_metrics():
     with TaskLock:
+        global BlockNumber
         global CommitTransacionCount
         global DepositDict
         global WithdrawalDict
-        CommitTransacionCount = {}
-        DepositDict = {}
-        WithdrawalDict = {}
+        if BlockNumber is not None:
+            last_block_num = BlockNumber - 1
+            CommitTransacionCount.pop(last_block_num, None)
+            DepositDict.pop(last_block_num, None)
+            WithdrawalDict.pop(last_block_num, None)
+            logging.info(f"Reset metrics for block: {last_block_num}")
 
 """
 General metrics job.
@@ -142,7 +146,6 @@ class JobThread(threading.Thread):
             elif net_env == "mainnet_v1":
                 self.gw_config = mainnet_v1_config()
             else:
-                logging.info("use devnet")
                 rollup_result_path = os.environ["ROLLUP_RESULT_PATH"]
                 scripts_result_path = os.environ["SCRIPTS_RESULT_PATH"]
                 self.gw_config = devnet_config(rollup_result_path,
@@ -153,25 +156,27 @@ class JobThread(threading.Thread):
                     )
                     self.gw_config = testnet_config()
 
-    """
-    Always try to get new tip.
-    """
     def run(self):
         global BlockNumber
 
         while True:
             sleep(1)
-            logging.info("Start running")
-            try:
-                tip_number = self.gw_rpc.get_tip_number()
-            except:
-                logging.exception("Cannot get tip number")
-                continue
+            logging.debug("Start running")
+            if BlockNumber is None:
+                try:
+                    tip_number = self.gw_rpc.get_tip_number()
+                except:
+                    logging.exception("Cannot get tip number")
+                    continue
+            else:
+                tip_number = BlockNumber
 
             try:
                 ping = self.gw_rpc.ping()
 
                 block = self.gw_rpc.get_block_by_number(hex(tip_number))
+                if block is None:
+                    continue
                 last_block_hash = block['hash']
                 last_block_ts = convert_int(block['raw']['timestamp'])
                 tx_cnt = len(block['transactions'])
@@ -188,7 +193,6 @@ class JobThread(threading.Thread):
             except:
                 logging.exception("get block info failed")
                 continue
-            logging.info("Loading deposit stats")
             try:
                 deposit = get_gw_stat_by_lock(
                     "deposit_lock", self.gw_rpc,
@@ -197,7 +201,6 @@ class JobThread(threading.Thread):
             except:
                 logging.exception("Failed to get deposit stats")
                 continue
-            logging.info("Loading withdrawal stats")
             try:
                 withdrawal = get_gw_stat_by_lock(
                     "withdrawal_lock", self.gw_rpc,
@@ -207,7 +210,7 @@ class JobThread(threading.Thread):
                 logging.exception("Failed to get withdrawal stats")
                 continue
             update_metrics(
-                    tip_number,
+                    tip_number+1,
                     ping,
                     last_block_hash,
                     last_block_ts,
@@ -231,7 +234,6 @@ class CustodianJobThread(JobThread):
         global CustodianStats
         while True:
             sleep(10)
-            logging.info("Loading custodian stats")
             try:
                 CustodianStats = get_custodian(
                     self.ckb_indexer_url, self.gw_config,

@@ -148,7 +148,6 @@ class CKBIndexer(object):
                 else:
                     ckb_cell_count += 1
 
-            logging.info(f"loaded {cnt} page of custodian cells")
             cursor = result["last_cursor"]
             if cursor == "0x":
                 break
