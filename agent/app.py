@@ -171,6 +171,7 @@ class JobThread(threading.Thread):
             if BlockNumber is None:
                 try:
                     tip_number = self.gw_rpc.get_tip_number()
+                    BlockNumber = tip_number
                 except:
                     logging.exception("Cannot get tip number")
                     continue
