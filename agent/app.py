@@ -105,22 +105,12 @@ Reset metrics after being scraped by grafana successfully.
 """
 def reset_metrics():
     with TaskLock:
-        global BlockNumber
         global CommitTransacionCount
         global DepositDict
         global WithdrawalDict
-        if BlockNumber is not None:
-            last_block_num = BlockNumber - 1
-            for k in list(CommitTransacionCount.keys()):
-                if k <= last_block_num:
-                    CommitTransacionCount.pop(k, None)
-            for k in list(DepositDict.keys()):
-                if k <= last_block_num:
-                    DepositDict.pop(last_block_num, None)
-            for k in list(WithdrawalDict.keys()):
-                if k <= last_block_num:
-                    WithdrawalDict.pop(last_block_num, None)
-            logging.info(f"Reset metrics for blocks before: {last_block_num}")
+        CommitTransacionCount = {}
+        DepositDict = {}
+        WithdrawalDict = {}
 
 """
 General metrics job.
