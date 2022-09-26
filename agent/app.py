@@ -111,10 +111,16 @@ def reset_metrics():
         global WithdrawalDict
         if BlockNumber is not None:
             last_block_num = BlockNumber - 1
-            CommitTransacionCount.pop(last_block_num, None)
-            DepositDict.pop(last_block_num, None)
-            WithdrawalDict.pop(last_block_num, None)
-            logging.info(f"Reset metrics for block: {last_block_num}")
+            for k in list(CommitTransacionCount.keys()):
+                if k <= last_block_num:
+                    CommitTransacionCount.pop(k, None)
+            for k in list(DepositDict.keys()):
+                if k <= last_block_num:
+                    DepositDict.pop(last_block_num, None)
+            for k in list(WithdrawalDict.keys()):
+                if k <= last_block_num:
+                    WithdrawalDict.pop(last_block_num, None)
+            logging.info(f"Reset metrics for blocks before: {last_block_num}")
 
 """
 General metrics job.
