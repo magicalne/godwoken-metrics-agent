@@ -1,6 +1,5 @@
 import traceback
 from agent.ckb_indexer import CKBIndexer
-import time
 
 from multiprocessing.pool import ApplyResult, ThreadPool
 
